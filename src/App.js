@@ -23,6 +23,9 @@ function App() {
         diiInflow: '+₹0 Cr'
     });
     const [selectedMarketCap, setSelectedMarketCap] = useState(null);
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const [authMode, setAuthMode] = useState('signin'); // 'signin' or 'signup'
+    const [user, setUser] = useState(null); // To track logged in user
 
     // Enhanced News states
     const [showNewsModal, setShowNewsModal] = useState(false);
@@ -756,8 +759,252 @@ function App() {
         }
     }, [allCompanies]);
 
+    // Add this function before the return statement
+    const renderAuthModal = () => {
+        if (!showAuthModal) return null;
+
+        return (
+            <div className="auth-modal-overlay" onClick={() => setShowAuthModal(false)}>
+                <div className="auth-modal comprehensive" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-header">
+                        <h2>
+                            <i className="fas fa-user"></i>
+                            {authMode === 'signin' ? 'Sign In to Smart Investment Advisor' : 'Create Account'}
+                        </h2>
+                        <button className="close-modal" onClick={() => setShowAuthModal(false)}>
+                            <i className="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div className="modal-content">
+                        {user ? (
+                            <div className="already-logged-in">
+                                <i className="fas fa-check-circle success"></i>
+                                <h3>Welcome back, Investor!</h3>
+                                <p>You are already signed in and can access all features.</p>
+                                <button
+                                    className="logout-btn"
+                                    onClick={() => setUser(null)}
+                                >
+                                    <i className="fas fa-sign-out-alt"></i> Sign Out
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="auth-form">
+                                <div className="auth-tabs">
+                                    <button
+                                        className={`auth-tab ${authMode === 'signin' ? 'active' : ''}`}
+                                        onClick={() => setAuthMode('signin')}
+                                    >
+                                        Sign In
+                                    </button>
+                                    <button
+                                        className={`auth-tab ${authMode === 'signup' ? 'active' : ''}`}
+                                        onClick={() => setAuthMode('signup')}
+                                    >
+                                        Sign Up
+                                    </button>
+                                </div>
+
+                                {authMode === 'signin' ? (
+                                    <div className="signin-form">
+                                        <div className="form-group">
+                                            <label>
+                                                <i className="fas fa-envelope"></i> Email
+                                            </label>
+                                            <input
+                                                type="email"
+                                                placeholder="investor@example.com"
+                                                className="auth-input"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>
+                                                <i className="fas fa-lock"></i> Password
+                                            </label>
+                                            <input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                className="auth-input"
+                                            />
+                                            <div className="forgot-password">
+                                                <a href="#">Forgot password?</a>
+                                            </div>
+                                        </div>
+                                        <button
+                                            className="auth-submit-btn"
+                                            onClick={() => {
+                                                // Simulate login - in real app, you'd call your API
+                                                setUser({
+                                                    name: 'John Investor',
+                                                    email: 'investor@example.com',
+                                                    portfolio: 1250000
+                                                });
+                                                setShowAuthModal(false);
+                                            }}
+                                        >
+                                            <i className="fas fa-sign-in-alt"></i> Sign In
+                                        </button>
+
+                                        <div className="auth-divider">
+                                            <span>or continue with</span>
+                                        </div>
+
+                                        <div className="social-auth">
+                                            <button className="social-btn google">
+                                                <i className="fab fa-google"></i> Google
+                                            </button>
+                                            <button className="social-btn linkedin">
+                                                <i className="fab fa-linkedin"></i> LinkedIn
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="signup-form">
+                                        <div className="form-group">
+                                            <label>
+                                                <i className="fas fa-user"></i> Full Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                placeholder="John Investor"
+                                                className="auth-input"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>
+                                                <i className="fas fa-envelope"></i> Email
+                                            </label>
+                                            <input
+                                                type="email"
+                                                placeholder="investor@example.com"
+                                                className="auth-input"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>
+                                                <i className="fas fa-lock"></i> Password
+                                            </label>
+                                            <input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                className="auth-input"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>
+                                                <i className="fas fa-lock"></i> Confirm Password
+                                            </label>
+                                            <input
+                                                type="password"
+                                                placeholder="••••••••"
+                                                className="auth-input"
+                                            />
+                                        </div>
+
+                                        <div className="form-group checkbox">
+                                            <input type="checkbox" id="terms" />
+                                            <label htmlFor="terms">
+                                                I agree to the Terms of Service and Privacy Policy
+                                            </label>
+                                        </div>
+
+                                        <button
+                                            className="auth-submit-btn"
+                                            onClick={() => {
+                                                // Simulate signup - in real app, you'd call your API
+                                                setUser({
+                                                    name: 'New Investor',
+                                                    email: 'new@example.com',
+                                                    portfolio: 0
+                                                });
+                                                setShowAuthModal(false);
+                                            }}
+                                        >
+                                            <i className="fas fa-user-plus"></i> Create Account
+                                        </button>
+
+                                        <p className="auth-note">
+                                            By signing up, you'll get access to:
+                                            <ul>
+                                                <li><i className="fas fa-check"></i> Portfolio tracking</li>
+                                                <li><i className="fas fa-check"></i> Custom watchlists</li>
+                                                <li><i className="fas fa-check"></i> Advanced analytics</li>
+                                                <li><i className="fas fa-check"></i> AI recommendations</li>
+                                            </ul>
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="modal-footer">
+                        <p className="auth-footer-note">
+                            <i className="fas fa-shield-alt"></i> Your data is securely encrypted. We never share your information.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="App">
+            <div className="top-header">
+                <div className="top-header-left">
+                    <div className="market-status">
+                        <span>Market Status</span>
+                        <span className="status-closed">CLOSED</span>
+                    </div>
+                    <div className="investment-signals">
+                        <span>Investment Signals</span>
+                        <span className="signal-bullish">BULLISH</span>
+                    </div>
+
+                </div>
+                <div className="top-header-right">
+                    <div className="auth-buttons">
+                        {user ? (
+                            <div className="user-info">
+            <span className="user-avatar">
+                <i className="fas fa-user-circle"></i>
+            </span>
+                                <span className="user-name">{user.name}</span>
+                                <button
+                                    className="sign-out-btn"
+                                    onClick={() => setUser(null)}
+                                >
+                                    <i className="fas fa-sign-out-alt"></i>
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <button
+                                    className="sign-in-btn"
+                                    onClick={() => {
+                                        setAuthMode('signin');
+                                        setShowAuthModal(true);
+                                    }}
+                                >
+                                    Sign In
+                                </button>
+                                <button
+                                    className="sign-up-btn"
+                                    onClick={() => {
+                                        setAuthMode('signup');
+                                        setShowAuthModal(true);
+                                    }}
+                                >
+                                    Sign Up
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+
             {/* Market Header */}
             <div className="market-header">
                 <div className="market-title">
@@ -1746,6 +1993,7 @@ function App() {
                                                     );
                                                 })}
 
+
                                                 {totalNewsPages > 5 && newsPage < totalNewsPages - 2 && (
                                                     <>
                                                         <span className="news-page-dots">...</span>
@@ -1797,6 +2045,8 @@ function App() {
                     </div>
                 </div>
             )}
+            {renderAuthModal()}
+
         </div>
     );
 }
