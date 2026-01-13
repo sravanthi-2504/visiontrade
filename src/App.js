@@ -544,8 +544,8 @@ function App() {
                 const changePercent = ((change / price) * 100).toFixed(2);
 
                 // Market cap proportional to price
-                const marketCapMultiplier = 5000 + Math.random() * 95000;
-                const marketCap = parseFloat(price) * marketCapMultiplier;
+                const marketCapMultiplier = 50 + Math.random() * 950; // Much smaller multiplier
+                const marketCap = parseFloat(price) * marketCapMultiplier / 100; // Divide by 100
 
                 // Generate company name
                 const nameSuffixes = ['Ltd', 'Limited', 'Pvt Ltd', 'Private Limited'];
@@ -594,7 +594,7 @@ function App() {
             const price = (Math.random() * 5000 + 10).toFixed(2);
             const change = (Math.random() * 15 - 7.5).toFixed(2);
             const changePercent = ((change / price) * 100).toFixed(2);
-            const marketCap = parseFloat(price) * (1000 + Math.random() * 99000);
+            const marketCap = parseFloat(price) * (10 + Math.random() * 990) / 100; // Much smaller values
 
             // Generate company name
             const nameSuffixes = ['Ltd', 'Limited', 'Pvt Ltd', 'Private Limited'];
@@ -1178,10 +1178,10 @@ function App() {
     };
 
     const getMarketCapCategory = (marketCap) => {
-        if (!marketCap) return 'Unknown';
+        if (!marketCap || marketCap === 0) return 'Unknown';
         if (marketCap > 20000) return 'Large Cap';
-        if (marketCap > 5000) return 'Mid Cap';
-        if (marketCap > 500) return 'Small Cap';
+        if (marketCap >= 5000) return 'Mid Cap';
+        if (marketCap >= 500) return 'Small Cap';
         return 'Micro Cap';
     };
 
@@ -1252,6 +1252,7 @@ function App() {
             });
         }
     }, [allCompanies]);
+
 
     // Add this function before the return statement
     const renderAuthModal = () => {
