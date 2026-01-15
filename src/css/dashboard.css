@@ -1,0 +1,744 @@
+/* dashboard.css - Image 2 Color Scheme */
+
+:root {
+    /* Main colors from Image 2 */
+    --primary-purple: #3A0CA3;      /* Dark purple for headers */
+    --primary-blue: #4361EE;        /* Blue for accents */
+    --accent-cyan: #4CC9F0;         /* Cyan for highlights */
+    --accent-magenta: #F72585;      /* Pink/magenta for alerts */
+
+    /* Background colors */
+    --bg-dark: #0F172A;             /* Dark navy background */
+    --bg-card: #FFFFFF;             /* White cards */
+    --bg-light: #F8FAFC;            /* Light gray background */
+
+    /* Text colors */
+    --text-dark: #1E293B;           /* Dark text on white */
+    --text-light: #FFFFFF;          /* White text on dark */
+    --text-gray: #64748B;           /* Gray text */
+
+    /* Status colors (matching Image 2) */
+    --score-high: #10B981;          /* Green for high scores */
+    --score-medium: #F59E0B;        /* Yellow for medium */
+    --score-low: #EF4444;           /* Red for low */
+
+    /* UI elements */
+    --border-color: #E2E8F0;        /* Light gray borders */
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Apply to entire dashboard */
+.dashboard-container {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+}
+
+/* Headers/titles (purple like Image 2) */
+h1, h2, h3, .section-title {
+    color: var(--primary-purple);
+    background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    border-bottom: 2px solid var(--accent-cyan);
+}
+
+/* Cards (white like Image 2) */
+.card, .market-card, .sector-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    color: var(--text-dark);
+}
+
+/* Buttons (blue like Image 2) */
+.btn, button, .analyze-btn {
+    background: linear-gradient(135deg, var(--primary-blue), var(--accent-cyan));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
+/* Table headers (purple gradient) */
+table th {
+    background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+    color: white;
+}
+
+/* Score indicators */
+.investment-score.high {
+    color: var(--score-high);
+    background-color: rgba(16, 185, 129, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.investment-score.medium {
+    color: var(--score-medium);
+    background-color: rgba(245, 158, 11, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.investment-score.low {
+    color: var(--score-low);
+    background-color: rgba(239, 68, 68, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Recommendation badges */
+.recommendation {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.recommendation.accumulate {
+    background-color: rgba(67, 97, 238, 0.1);
+    color: var(--primary-blue);
+    border: 1px solid var(--primary-blue);
+}
+
+.recommendation.buy {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--score-high);
+    border: 1px solid var(--score-high);
+}
+
+.recommendation.hold {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--score-medium);
+    border: 1px solid var(--score-medium);
+}
+
+.recommendation.reduce {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--score-low);
+    border: 1px solid var(--score-low);
+}
+
+/* Market status indicators */
+.market-up {
+    color: var(--score-high);
+    font-weight: bold;
+}
+
+.market-down {
+    color: var(--score-low);
+    font-weight: bold;
+}
+
+/* Search box */
+.search-box {
+    background-color: var(--bg-card);
+    border: 2px solid var(--primary-blue);
+    border-radius: 8px;
+    color: var(--text-dark);
+}
+
+/* Sector filter items */
+.sector-item {
+    background-color: var(--bg-card);
+    border-left: 4px solid var(--primary-purple);
+    margin-bottom: 8px;
+    padding: 12px;
+}
+
+.sector-item:hover {
+    background-color: rgba(67, 97, 238, 0.05);
+    border-left-color: var(--accent-cyan);
+}
+
+/* News items */
+.news-item {
+    border-left: 3px solid var(--accent-cyan);
+    background-color: var(--bg-card);
+    padding: 12px;
+    margin-bottom: 10px;
+}
+
+/* Chart containers */
+.chart-container {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+}
+/* Dashboard.css */
+.dashboard {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    padding: 20px;
+    background-color: #f5f7fa;
+    min-height: 100vh;
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header h1 {
+    margin: 0 0 15px 0;
+    font-size: 28px;
+    font-weight: 600;
+}
+
+.market-status {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 14px;
+}
+
+.status-indicator {
+    font-size: 20px;
+}
+
+.status-indicator.open {
+    color: #4CAF50;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.closed {
+    color: #ff4444;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    display: flex;
+    flex-grow: 1;
+    max-width: 500px;
+}
+
+.search-input {
+    flex-grow: 1;
+    padding: 12px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px 0 0 8px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.search-input:focus {
+    border-color: #2a5298;
+}
+
+.search-button {
+    padding: 12px 25px;
+    background: #2a5298;
+    color: white;
+    border: none;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+
+.search-button:hover {
+    background: #1e3c72;
+}
+
+.filters {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.sector-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sector-select {
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    background: white;
+    font-size: 14px;
+    min-width: 150px;
+}
+
+.refresh-button {
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+.refresh-button:hover {
+    background: #3d8b40;
+}
+
+.market-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+}
+
+.stat-card.advances .stat-value {
+    color: #4CAF50;
+}
+
+.stat-card.declines .stat-value {
+    color: #ff4444;
+}
+
+.stocks-table-container {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.stocks-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.stocks-table thead {
+    background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+    color: white;
+}
+
+.stocks-table th {
+    padding: 18px 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stocks-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+}
+
+.stocks-table tbody tr:hover {
+    background-color: #f8fafd;
+}
+
+.stocks-table td {
+    padding: 16px 15px;
+    font-size: 15px;
+}
+
+.symbol-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.symbol {
+    font-weight: 600;
+    color: #1e3c72;
+}
+
+.raw-symbol {
+    font-size: 12px;
+    color: #888;
+    font-family: monospace;
+}
+
+.company-name {
+    font-weight: 500;
+    color: #333;
+    max-width: 300px;
+}
+
+.sector-cell {
+    min-width: 120px;
+}
+
+.sector-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sector-finance {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.sector-oil-gas {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.sector-it {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.sector-banking {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.sector-consumer-goods {
+    background: #fce4ec;
+    color: #c2185b;
+}
+
+.sector-power {
+    background: #e0f7fa;
+    color: #006064;
+}
+
+.price-cell {
+    font-weight: 600;
+    color: #333;
+    font-size: 16px;
+}
+
+.change-cell {
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.change-cell.positive {
+    color: #4CAF50;
+}
+
+.change-cell.negative {
+    color: #ff4444;
+}
+
+.market-cap-cell {
+    min-width: 100px;
+}
+
+.cap-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.large-cap {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.mid-cap {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.small-cap {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.actions-cell {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.analyze-btn {
+    background: #2196f3;
+    color: white;
+}
+
+.analyze-btn:hover {
+    background: #0b7dda;
+}
+
+.add-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.add-btn:hover {
+    background: #3d8b40;
+}
+
+.no-results {
+    text-align: center;
+    padding: 50px 20px;
+    color: #666;
+    font-size: 16px;
+}
+
+.dashboard-footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-size: 14px;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 30px;
+}
+
+.dashboard-footer p {
+    margin: 5px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        max-width: 100%;
+    }
+
+    .filters {
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: 15px;
+    }
+
+    .stocks-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .actions-cell {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .action-btn {
+        width: 100%;
+    }
+}
+
+/* Add to Dashboard.css */
+
+.no-companies {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 16px;
+    background: #f9f9f9;
+}
+
+.market-news {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.market-news h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #1e3c72;
+    font-size: 22px;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.news-item {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.news-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.news-item h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.4;
+}
+
+.news-source {
+    font-size: 13px;
+    color: #888;
+    margin: 0;
+}
+
+/* Fix for Sector Filter visibility */
+.sector-filter-container {
+    background-color: white; /* White background like Image 2 */
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.sector-filter-title {
+    color: #3A0CA3; /* Purple from Image 2 */
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #4CC9F0; /* Cyan underline */
+    padding-bottom: 10px;
+}
+
+.sector-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background-color: white;
+    color: #1E293B; /* Dark text */
+    border-left: 4px solid #4361EE; /* Blue left border */
+}
+
+.sector-item:hover {
+    background-color: rgba(67, 97, 238, 0.05); /* Light blue hover */
+    transform: translateX(5px);
+}
+
+.sector-name {
+    font-weight: 500;
+    color: #1E293B; /* Dark text */
+}
+
+.sector-count {
+    background: linear-gradient(135deg, #4361EE, #4CC9F0); /* Blue gradient */
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Fix for "All Sectors" item */
+.sector-item.all-sectors {
+    border-left: 4px solid #3A0CA3; /* Purple for "All Sectors" */
+    background-color: rgba(58, 12, 163, 0.05); /* Light purple background */
+}
+
+.sector-item.all-sectors .sector-count {
+    background: linear-gradient(135deg, #3A0CA3, #4361EE); /* Purple to blue */
+}
+
+/* Title "VisionTrade: A Smart Investment Advisor" - Light Blue */
+.dashboard-title, .main-title {
+    background: linear-gradient(135deg, #4CC9F0, #4361EE); /* Light blue to blue */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+/* Subtitles and section headers */
+.section-header {
+    color: #3A0CA3; /* Purple */
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 24px 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #E2E8F0;
+}
+
+/* For the "Filter by Sector" title specifically */
+#filter-by-sector-title {
+    color: #3A0CA3 !important; /* Force purple color */
+    background: linear-gradient(135deg, #3A0CA3, #4361EE);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+..smart-investment-title {
+    background: linear-gradient(135deg, #4CC9F0, #F72585);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Force color change with !important */
+h1:first-of-type {
+    background: linear-gradient(135deg, #4CC9F0, #4361EE) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    font-size: 2.5rem !important;
+}
+
+/* If you have a specific class */
+.smart-investment-title,
+.dashboard-title,
+.main-title {
+    background: linear-gradient(135deg, #4CC9F0, #4361EE) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+}
