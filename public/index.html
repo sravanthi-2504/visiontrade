@@ -46,15 +46,6 @@
             gap: 15px;
         }
 
-        <h1 style="
-        background: linear-gradient(135deg, #4CC9F0, #4361EE);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: 0;
-        ">Smart Investment Advisor</h1>
-
         header h1 i {
             color: #f1c40f;
         }
@@ -196,6 +187,26 @@
             top: 50%;
             transform: translateY(-50%);
             color: #95a5a6;
+        }
+
+        /* NEW: Column Headers */
+        .column-headers {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+            gap: 15px;
+            padding: 15px 20px;
+            background-color: #2a5298;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .column-headers .header-item {
+            text-align: center;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .stocks-container {
@@ -423,6 +434,9 @@
             padding: 60px 20px;
             color: #7f8c8d;
             font-size: 1.1rem;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            margin-top: 10px;
         }
 
         @media (max-width: 1100px) {
@@ -430,9 +444,14 @@
                 grid-template-columns: 1fr;
             }
 
+            .column-headers {
+                display: none; /* Hide headers on mobile */
+            }
+
             .stock-card {
                 grid-template-columns: 1fr;
                 gap: 10px;
+                text-align: center;
             }
 
             .stock-card > div {
@@ -526,6 +545,16 @@
         <div class="search-box">
             <i class="fas fa-search"></i>
             <input type="text" id="search-input" placeholder="Search for stocks, symbols, or companies...">
+        </div>
+
+        <!-- NEW: Column Headers Added Here -->
+        <div class="column-headers">
+            <div class="header-item">SYMBOL & COMPANY</div>
+            <div class="header-item">MARKET CAP</div>
+            <div class="header-item">RECOMMENDATION</div>
+            <div class="header-item">RISK LEVEL</div>
+            <div class="header-item">P/E SCORE</div>
+            <div class="header-item">ACTION</div>
         </div>
 
         <div class="stocks-container" id="stocks-container">
@@ -779,7 +808,7 @@ ATALREAL | Atal Realtech Limited
 ATAM | Atam Valves Limited
 ATHERENERG | Ather Energy Limited
 ATLANTAELE | Atlanta Electricals Limited
-ATLASCYCLE | Atlas Cycles (Haryana) Limited
+ATLANCYCLE | Atlas Cycles (Haryana) Limited
 ATULAUTO | Atul Auto Limited
 ATUL | Atul Limited
 AURIGROW | Auri Grow India Limited
@@ -1259,7 +1288,7 @@ GANESHBE | Ganesh Benzoplast Limited
 GANESHCP | Ganesh Consumer Products Limited
 GANECOS | Ganesha Ecosphere Limited
 GANGAFORGE | Ganga Forging Limited
-GANGESSECU | Ganges Securities Limited
+GANGGESSECU | Ganges Securities Limited
 GRSE | Garden Reach Shipbuilders & Engineers Limited
 GARUDA | Garuda Construction and Engineering Limited
 GRWRHITECH | Garware Hi-Tech Films Limited
@@ -1474,7 +1503,7 @@ IRFC | Indian Railway Finance Corporation Limited
 IREDA | Indian Renewable Energy Development Agency Limited
 INDTERRAIN | Indian Terrain Fashions Limited
 INDIGOPNTS | Indigo Paints Limited
-INDIQUBE | Indiqube Spaces Limited
+INDIQUBE | Indiquube Spaces Limited
 INDOAMIN | Indo Amines Limited
 INDOBORAX | Indo Borax & Chemicals Limited
 ICIL | Indo Count Industries Limited
@@ -1492,7 +1521,7 @@ INDOWIND | Indowind Energy Limited
 IGL | Indraprastha Gas Limited
 INDRAMEDCO | Indraprastha Medical Corporation Limited
 INDUSTOWER | Indus Towers Limited
-INDUSINDBK | IndusInd Bank Limited
+INDUSTRINDBK | IndusInd Bank Limited
 IITL | Industrial Investment Trust Limited
 INFIBEAM | Infibeam Avenues Limited
 NAUKRI | Info Edge (India) Limited
@@ -1605,7 +1634,7 @@ KAKATCEM | Kakatiya Cement Sugar & Industries Limited
 KALPATARU | Kalpataru Limited
 KPIL | Kalpataru Projects International Limited
 KALYANKJIL | Kalyan Jewellers India Limited
-KALYANI | Kalyani Commercials Limited
+KALYANI | Kalyanai Commercials Limited
 KALYANIFRG | Kalyani Forge Limited
 KICL | Kalyani Investment Company Limited
 KSL | Kalyani Steels Limited
@@ -1634,7 +1663,7 @@ KFINTECH | Kfin Technologies Limited
 KHADIM | Khadim India Limited
 KHAITANLTD | Khaitan (India) Limited
 KHAICHEM | Khaitan Chemicals & Fertilizers Limited
-KHANDSE | Khandwala Securities Limited
+KHA NDWALA | Khandwala Securities Limited
 KILITCH | Kilitch Drugs (India) Limited
 KINGFA | Kingfa Science & Technology (India) Limited
 KIRIINDUS | Kiri Industries Limited
@@ -2640,7 +2669,7 @@ UJJIVANSFB | Ujjivan Small Finance Bank Limited
 ULTRACEMCO | UltraTech Cement Limited
 UMAEXPORTS | Uma Exports Limited
 UNICHEMLAB | Unichem Laboratories Limited
-UNIECOM | Unicommerce Esolutions Limited
+UNIECOM | Uniicommerce Esolutions Limited
 UNIINFO | Uniinfo Telecom Services Limited
 UNIMECH | Unimech Aerospace and Manufacturing Limited
 UNIONBANK | Union Bank of India
@@ -2673,7 +2702,7 @@ VIPCLOTHNG | VIP Clothing Limited
 VIPIND | VIP Industries Limited
 VLEGOV | VL E-Governance & IT Solutions Limited
 VLSFINANCE | VLS Finance Limited
-VMSTMT | VMS TMT Limited
+VMSTMT | VMSTMT Limited
 VRLLOG | VRL Logistics Limited
 VSTIND | VST Industries Limited
 VADILALIND | Vadilal Industries Limited
