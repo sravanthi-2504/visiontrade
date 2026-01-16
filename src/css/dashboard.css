@@ -742,3 +742,53 @@ h1:first-of-type {
     -webkit-text-fill-color: transparent !important;
     color: transparent !important;
 }
+
+.loading-news, .no-news-message {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 16px;
+}
+
+.loading-news {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.no-news-message {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.no-news-message p {
+    margin-bottom: 10px;
+}
+
+.no-news-message p:last-child {
+    margin-bottom: 0;
+    font-size: 14px;
+    color: #888;
+}
+/* Add this CSS for better visibility */
+.live-market-insights {
+    color: #333; /* Dark text for better visibility */
+}
+
+.news-item {
+    color: #222;
+    border-left: 3px solid #007bff;
+    padding-left: 10px;
+    margin-bottom: 10px;
+}
+
+.footer {
+    color: #666;
+    font-size: 0.9em;
+    text-align: center;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    margin-top: 20px;
+}

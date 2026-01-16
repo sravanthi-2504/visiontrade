@@ -283,13 +283,16 @@ function App() {
         }
     }, [allCompanies]);
 
-    // Enhanced news fetching with auto-refresh
+    // Enhanced news fetching with auto-refresh - ONLY REAL NEWS
     useEffect(() => {
+        // Initial fetch on component mount
+        fetchRealNews();
+
         // Clear existing interval
         if (newsUpdateRef.current) clearInterval(newsUpdateRef.current);
 
         // Set up new interval based on market status
-        const updateInterval = isMarketOpen() ? 60000 : 300000;
+        const updateInterval = isMarketOpen() ? 60000 : 300000; // 1 min when open, 5 min when closed
         newsUpdateRef.current = setInterval(() => {
             fetchRealNews();
         }, updateInterval);
@@ -333,7 +336,7 @@ function App() {
         return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
 
-    // Enhanced News fetching
+    // Enhanced News fetching - ONLY REAL NEWS
     const fetchRealNews = async () => {
         setLoadingNews(true);
 
@@ -345,7 +348,7 @@ function App() {
 
             const data = await response.json();
 
-            if (data.status === "success") {
+            if (data.status === "success" && data.results && data.results.length > 0) {
                 const realNews = data.results.map((item, index) => ({
                     id: index + 1,
                     title: item.title,
@@ -362,72 +365,19 @@ function App() {
                 }));
 
                 setNews(realNews);
+                console.log(`✅ Fetched ${realNews.length} real news articles`);
+            } else {
+                // If API returns no data, show empty state
+                setNews([]);
+                console.log('⚠️ No news available from API');
             }
         } catch (error) {
-            console.error('Error fetching real news:', error);
-            const fallbackNews = generateComprehensiveNews();
-            setNews(fallbackNews);
+            console.error('❌ Error fetching real news:', error);
+            // Don't use fallback - set empty news array
+            setNews([]);
         }
 
         setLoadingNews(false);
-    };
-
-    // Generate comprehensive mock news
-    const generateComprehensiveNews = () => {
-        const newsTypes = [
-            {type: 'market', impact: 'medium', source: 'Market Update'},
-            {type: 'results', impact: 'high', source: 'Financial Express'},
-            {type: 'global', impact: 'medium', source: 'Reuters'},
-            {type: 'policy', impact: 'high', source: 'Business Standard'},
-            {type: 'stocks', impact: 'low', source: 'MoneyControl'},
-            {type: 'breaking', impact: 'high', source: 'Breaking News', isBreaking: true}
-        ];
-
-        const stockSymbols = ['RELIANCE.NS', 'TCS.NS', 'HDFCBANK.NS', 'INFY.NS', 'ICICIBANK.NS', 'ITC.NS', 'SBIN.NS', 'BHARTIARTL.NS'];
-        const companies = ['Reliance Industries', 'TCS', 'HDFC Bank', 'Infosys', 'ICICI Bank', 'ITC', 'State Bank of India', 'Bharti Airtel'];
-        const sectors = ['Banking', 'IT', 'Energy', 'FMCG', 'Auto', 'Pharma', 'Metal', 'Realty'];
-
-        const newsItems = [];
-
-        for (let i = 0; i < 50; i++) {
-            const type = newsTypes[i % newsTypes.length];
-            const timeAgo = i < 5 ? `${i * 15} minutes ago` :
-                i < 15 ? `${i - 4} hours ago` :
-                    `${Math.floor((i - 14) / 2)} days ago`;
-
-            const affectedStocks = [];
-            const affectedCompanies = [];
-            for (let j = 0; j < Math.floor(Math.random() * 3) + 1; j++) {
-                const idx = Math.floor(Math.random() * stockSymbols.length);
-                affectedStocks.push(stockSymbols[idx]);
-                affectedCompanies.push(companies[idx]);
-            }
-
-            const templates = [
-                `${affectedCompanies.join(', ')} shares ${Math.random() > 0.5 ? 'rise' : 'fall'} on ${type.type} news`,
-                `${sectors[Math.floor(Math.random() * sectors.length)]} sector ${Math.random() > 0.5 ? 'gains' : 'declines'} amid market volatility`,
-                `${type.source} reports: Market ${Math.random() > 0.5 ? 'bullish' : 'bearish'} sentiment`,
-                `Breaking: ${affectedCompanies[0]} announces ${Math.random() > 0.5 ? 'quarterly results' : 'new acquisition'}`,
-                `Global markets ${Math.random() > 0.5 ? 'surge' : 'drop'} affecting ${affectedCompanies.join(', ')}`
-            ];
-
-            newsItems.push({
-                id: i + 1,
-                title: templates[Math.floor(Math.random() * templates.length)],
-                description: `Detailed analysis of market movements affecting ${affectedCompanies.join(', ')}. Investors watching closely.`,
-                time: timeAgo,
-                source: type.source,
-                category: type.type,
-                impact: type.impact,
-                isBreaking: type.isBreaking || false,
-                stocksAffected: affectedStocks,
-                companiesAffected: affectedCompanies,
-                sector: sectors[Math.floor(Math.random() * sectors.length)],
-                readTime: `${Math.floor(Math.random() * 5) + 1} min read`
-            });
-        }
-
-        return newsItems;
     };
 
     // Filter news by category
