@@ -1417,4 +1417,15 @@ function App() {
     );
 }
 
+// Dark Mode Toggle
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+darkModeToggle.addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+    if (document.body.classList.contains('dark-mode')) {
+        this.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+    } else {
+        this.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+    }
+});
+
 export default App;
