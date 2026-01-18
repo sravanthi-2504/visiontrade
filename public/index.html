@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Investment Advisor Dashboard</title>
+    <title>Smart Investment Advisor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -477,15 +477,15 @@
         .news-status {
             font-size: 0.85rem;
             color: #64748b;
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* Reduced from 20px */
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .news-status .dot {
-            width: 8px;
-            height: 8px;
+            width: 6px; /* Smaller */
+            height: 6px; /* Smaller */
             background-color: #4ade80;
             border-radius: 50%;
             animation: pulse 2s infinite;
@@ -500,27 +500,29 @@
         .news-list {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 12px; /* Reduced from 20px */
             max-height: 600px;
             overflow-y: auto;
         }
 
         .news-item {
-            padding-bottom: 20px;
+            padding-bottom: 12px; /* Reduced from 20px */
             border-bottom: 1px solid #e2e8f0;
         }
 
         .news-item:last-child {
             border-bottom: none;
+            padding-bottom: 0;
         }
 
         .news-impact {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            padding: 2px 8px; /* Smaller padding */
+            border-radius: 10px;
+            font-size: 0.7rem; /* Smaller */
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px; /* Reduced from 8px */
+            letter-spacing: 0.5px;
         }
 
         .impact-high {
@@ -539,24 +541,25 @@
         }
 
         .news-category {
-            font-size: 0.85rem;
+            font-size: 0.75rem; /* Smaller */
             color: #64748b;
-            margin-bottom: 5px;
+            margin-bottom: 3px; /* Reduced from 5px */
             text-transform: uppercase;
-            font-weight: 600;
+            font-weight: 700;
+            letter-spacing: 0.3px;
         }
 
         .news-title {
             font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 1.05rem;
+            margin-bottom: 6px; /* Reduced from 8px */
+            font-size: 1rem; /* Slightly smaller */
             color: #1e293b;
-            line-height: 1.4;
+            line-height: 1.3; /* Tighter line height */
         }
 
         .news-meta {
             color: #64748b;
-            font-size: 0.85rem;
+            font-size: 0.75rem; /* Smaller */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -565,11 +568,16 @@
         .news-time {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px; /* Smaller gap */
+        }
+
+        .news-time i {
+            font-size: 0.7rem; /* Smaller icon */
         }
 
         .news-source {
             font-weight: 600;
+            font-size: 0.75rem; /* Smaller */
         }
 
         .loading-news {
@@ -743,18 +751,14 @@
         }
     </style>
 </head>
-<header>
-    <h1><i class="fas fa-chart-line"></i> Smart Investment Advisor Dashboard</h1>
-    <p>Live market insights · AI-powered stock analysis · Investment recommendations · 3,500 Indian stocks analyzed</p>
-    <button id="dark-mode-toggle" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); border: none; padding: 8px 15px; border-radius: 8px; color: white; cursor: pointer;">
-        <i class="fas fa-moon"></i> Dark Mode
-    </button>
-</header>
 <body>
 <div class="main-container">
     <header>
-        <h1><i class="fas fa-chart-line"></i> Smart Investment Advisor Dashboard</h1>
+        <h1><i class="fas fa-chart-line"></i> Smart Investment Advisor</h1>
         <p>Live market insights · AI-powered stock analysis · Investment recommendations · 3,500 Indian stocks analyzed</p>
+        <button class="dashboard-btn">
+            <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+        </button>
     </header>
 
     <div class="dashboard-layout">
@@ -770,7 +774,7 @@
                     </li>
                     <li class="sector-item" data-sector="banking">
                         <span>Banking & Finance</span>
-                        <span class="stock-count">245</span>
+                        <span class="stock-count">255</span>
                     </li>
                     <li class="sector-item" data-sector="it">
                         <span>Information Technology</span>
@@ -911,7 +915,7 @@
 
 <script>
     // Configuration
-    const STOCKS_PER_PAGE = 30;
+    const STOCKS_PER_PAGE = 15;
 
     // Stock counts for each sector
     const sectorCounts = {
