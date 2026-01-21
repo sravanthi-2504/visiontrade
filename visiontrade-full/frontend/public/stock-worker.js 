@@ -1,0 +1,147 @@
+// stock-worker.js - Stock categorization Web Worker
+
+// Optimized sector patterns for fast lookup
+const sectorPatterns = {
+    'Banking': {
+        symbols: new Set(['HDFCBANK', 'ICICIBANK', 'SBIN', 'KOTAKBANK', 'AXISBANK', 'INDUSINDBK', 'BANDHANBNK', 'FEDERALBNK', 'IDFCFIRSTB', 'YESBANK']),
+        namePatterns: ['BANK'],
+        excludes: ['FINANCE', 'HOUSING']
+    },
+    'IT': {
+        symbols: new Set(['TCS', 'INFY', 'WIPRO', 'HCLTECH', 'TECHM', 'MINDTREE', 'MPHASIS', 'LTI', 'LTTS', 'COFORGE']),
+        namePatterns: ['SOFTWARE', 'TECHNOLOGY', 'INFOSYS', 'TECHNOLOGIES', 'DIGITAL', 'INFOTECH', 'SYSTEMS', 'SOLUTION']
+    },
+    'Pharma': {
+        symbols: new Set(['SUNPHARMA', 'DRREDDY', 'CIPLA', 'LUPIN', 'AUROPHARMA', 'DIVISLAB', 'BIOCON', 'GLENMARK', 'CADILAHC']),
+        namePatterns: ['PHARMA', 'PHARMACEUTICAL', 'LABORATOR', 'DRUG', 'MEDIC', 'BIOTECH', 'HEALTHCARE']
+    },
+    'Automobile': {
+        symbols: new Set(['MARUTI', 'TATAMOTORS', 'M&M', 'BAJAJ-AUTO', 'HEROMOTOCO', 'EICHERMOT', 'ASHOKLEY', 'TVSMOTOR', 'BHARATFORG']),
+        namePatterns: ['AUTO', 'MOTOR', 'VEHICLE', 'TYRE', 'ENGINE', 'FORGING', 'AXLE']
+    },
+    'FMCG': {
+        symbols: new Set(['ITC', 'HINDUNILVR', 'NESTLEIND', 'BRITANNIA', 'DABUR', 'GODREJCP', 'MARICO', 'TATACONSUM']),
+        namePatterns: ['FOOD', 'BEVERAGE', 'CONSUMER', 'BISCUIT', 'SNACK', 'DAIRY', 'DRINK']
+    },
+    'Finance': {
+        symbols: new Set(['HDFC', 'BAJFINANCE', 'SBILIFE', 'HDFCLIFE', 'ICICIPRULI', 'CHOLAFIN', 'PEL', 'MUTHOOTFIN']),
+        namePatterns: ['FINANCE', 'FINANCIAL', 'CAPITAL', 'INVESTMENT', 'CREDIT', 'HOUSING FINANCE']
+    },
+    'Oil & Gas': {
+        symbols: new Set(['RELIANCE', 'ONGC', 'IOC', 'BPCL', 'HINDPETRO', 'GAIL', 'OIL', 'PETRONET']),
+        namePatterns: ['OIL', 'PETROLEUM', 'GAS', 'REFINERY', 'FUEL', 'LNG', 'CNG']
+    },
+    'Energy': {
+        symbols: new Set(['NTPC', 'POWERGRID', 'TATAPOWER', 'ADANIPOWER', 'TORNTPOWER', 'JSWENERGY', 'NHPC', 'SJVN']),
+        namePatterns: ['POWER', 'ENERGY', 'ELECTRIC', 'RENEWABLE', 'SOLAR', 'WIND', 'HYDRO']
+    },
+    'Metals': {
+        symbols: new Set(['TATASTEEL', 'JSWSTEEL', 'HINDALCO', 'VEDL', 'SAIL', 'NMDC', 'NATIONALUM', 'HINDZINC']),
+        namePatterns: ['STEEL', 'METAL', 'ALUMINIUM', 'COPPER', 'MINING', 'IRON', 'ZINC']
+    },
+    'Cement': {
+        symbols: new Set(['ULTRACEMCO', 'SHREECEM', 'ACC', 'AMBUJACEM', 'RAMCOCEM', 'DALBHARAT']),
+        namePatterns: ['CEMENT']
+    },
+    'Insurance': {
+        symbols: new Set(['ICICIPRULI', 'HDFCLIFE', 'SBILIFE', 'MAXHEALTH', 'ICICIGI', 'NIACL']),
+        namePatterns: ['INSURANCE', 'ASSURANCE', 'LIFE', 'GENERAL INSURANCE']
+    }
+};
+
+// Fast categorization function
+function categorizeStock(stock) {
+    if (!stock || !stock.symbol || !stock.name) {
+        return 'Other';
+    }
+
+    const name = String(stock.name).toUpperCase();
+    const symbol = String(stock.symbol).toUpperCase();
+
+
+    // Check symbols first (O(1) lookup)
+    for (const [sector, patterns] of Object.entries(sectorPatterns)) {
+        if (patterns.symbols.has(symbol)) {
+            return sector;
+        }
+    }
+
+    // Check name patterns
+    for (const [sector, patterns] of Object.entries(sectorPatterns)) {
+        for (const pattern of patterns.namePatterns) {
+            if (name.includes(pattern)) {
+                // Check exclusions if any
+                if (!patterns.excludes ||
+                    !patterns.excludes.some(ex => name.includes(ex))) {
+                    return sector;
+                }
+            }
+        }
+    }
+
+    return 'Other';
+}
+
+// Listen for messages from main thread
+self.onmessage = function(e) {
+    const { stocks, batchSize = 200, action } = e.data;
+
+    if (action === 'categorize') {
+        processStocks(stocks, batchSize);
+    }
+};
+
+function processStocks(stocks, batchSize) {
+    const totalStocks = stocks.length;
+    const startTime = Date.now();
+    let processedCount = 0;
+    let batchNumber = 0;
+
+    // Process in batches
+    for (let i = 0; i < totalStocks; i += batchSize) {
+        batchNumber++;
+
+        const batch = stocks.slice(i, i + batchSize);
+        const processedBatch = batch
+            .filter(stock => stock && stock.symbol && stock.name)
+            .map(stock => ({
+                symbol: stock.symbol,
+                name: stock.name,
+                sector: categorizeStock(stock)
+            }));
+
+
+        processedCount += batch.length;
+
+        // Send batch results back
+        self.postMessage({
+            type: 'batch',
+            data: {
+                batch: processedBatch,
+                progress: processedCount / totalStocks,
+                batchNumber: batchNumber,
+                processedCount: processedCount,
+                totalStocks: totalStocks,
+                speed: Math.round(batch.length / ((Date.now() - startTime) / 1000) * batchNumber)
+            }
+        });
+
+        // Small delay to allow UI updates
+        if (batchNumber % 10 === 0) {
+            self.postMessage({
+                type: 'throttle',
+                data: { pause: 10 }
+            });
+        }
+    }
+
+    // Send completion
+    self.postMessage({
+        type: 'complete',
+        data: {
+            totalTime: Date.now() - startTime,
+            totalStocks: totalStocks,
+            speed: Math.round(totalStocks / ((Date.now() - startTime) / 1000))
+        }
+    });
+};

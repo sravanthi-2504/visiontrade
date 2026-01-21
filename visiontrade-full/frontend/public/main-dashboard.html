@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Stocks Dashboard | 3500+ Stocks with Sector Classification</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #8b5cf6;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .sector-chip, .market-cap-chip {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .sector-chip.active, .market-cap-chip.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .stock-row:hover {
+            background-color: rgba(59, 130, 246, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .positive-change {
+            color: #10b981;
+            background-color: rgba(16, 185, 129, 0.1);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-weight: 600;
+        }
+
+        .negative-change {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.1);
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-weight: 600;
+        }
+
+        .risk-low {
+            color: #10b981;
+            background-color: rgba(16, 185, 129, 0.1);
+            border-radius: 9999px;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-medium {
+            color: #f59e0b;
+            background-color: rgba(245, 158, 11, 0.1);
+            border-radius: 9999px;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-high {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.1);
+            border-radius: 9999px;
+            padding: 2px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .recommendation-strong-buy {
+            color: #10b981;
+            font-weight: 700;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .recommendation-buy {
+            color: #22c55e;
+            font-weight: 700;
+            background: rgba(34, 197, 94, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .recommendation-hold {
+            color: #f59e0b;
+            font-weight: 700;
+            background: rgba(245, 158, 11, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .recommendation-sell {
+            color: #ef4444;
+            font-weight: 700;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .recommendation-strong-sell {
+            color: #dc2626;
+            font-weight: 700;
+            background: rgba(220, 38, 38, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .dark-table {
+            background-color: #1e293b;
+        }
+
+        .dark-table th {
+            background-color: #1e293b;
+            border-color: #334155;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .dark-table td {
+            border-color: #334155;
+        }
+
+        .pagination-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Loading skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Live price animation */
+        .price-update {
+            animation: priceUpdate 0.5s ease-out;
+        }
+
+        @keyframes priceUpdate {
+            0% { background-color: rgba(16, 185, 129, 0.3); }
+            100% { background-color: transparent; }
+        }
+
+        /* Market cap colors */
+        .large-cap {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .mid-cap {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .small-cap {
+            color: #f59e0b;
+            background: rgba(245, 158, 11, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .micro-cap {
+            color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+
+        /* Sector colors - Static classes for Tailwind */
+        .sector-banking { background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
+        .sector-finance { background: rgba(16, 185, 129, 0.2); border-color: #10b981; }
+        .sector-it { background: rgba(139, 92, 246, 0.2); border-color: #8b5cf6; }
+        .sector-automobile { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
+        .sector-pharma { background: rgba(34, 197, 94, 0.2); border-color: #22c55e; }
+        .sector-fmcg { background: rgba(245, 158, 11, 0.2); border-color: #f59e0b; }
+        .sector-energy { background: rgba(20, 184, 166, 0.2); border-color: #14b8a6; }
+        .sector-metals { background: rgba(249, 115, 22, 0.2); border-color: #f97316; }
+        .sector-infrastructure { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; }
+        .sector-telecom { background: rgba(236, 72, 153, 0.2); border-color: #ec4899; }
+        .sector-real-estate { background: rgba(244, 63, 94, 0.2); border-color: #f43f5e; }
+        .sector-healthcare { background: rgba(6, 182, 212, 0.2); border-color: #06b6d4; }
+        .sector-chemicals { background: rgba(139, 92, 246, 0.2); border-color: #8b5cf6; }
+        .sector-consumer-goods { background: rgba(217, 70, 239, 0.2); border-color: #d946ef; }
+        .sector-oil-gas { background: rgba(6, 182, 212, 0.2); border-color: #06b6d4; }
+        .sector-cement { background: rgba(148, 163, 184, 0.2); border-color: #94a3b8; }
+        .sector-textiles { background: rgba(251, 191, 36, 0.2); border-color: #fbbf24; }
+        .sector-media { background: rgba(244, 114, 182, 0.2); border-color: #f472b6; }
+        .sector-agriculture { background: rgba(101, 163, 13, 0.2); border-color: #65a30d; }
+        .sector-aviation { background: rgba(2, 132, 199, 0.2); border-color: #0284c7; }
+        .sector-retail { background: rgba(192, 38, 211, 0.2); border-color: #c026d3; }
+        .sector-insurance { background: rgba(5, 150, 105, 0.2); border-color: #059669; }
+        .sector-logistics { background: rgba(124, 58, 237, 0.2); border-color: #7c3aed; }
+        .sector-power { background: rgba(234, 88, 12, 0.2); border-color: #ea580c; }
+        .sector-defence { background: rgba(220, 38, 38, 0.2); border-color: #dc2626; }
+        .sector-railway { background: rgba(2, 132, 199, 0.2); border-color: #0284c7; }
+        .sector-psu { background: rgba(30, 64, 175, 0.2); border-color: #1e40af; }
+        .sector-other { background: rgba(100, 116, 139, 0.2); border-color: #64748b; }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-gray-200">
+<!-- Navigation -->
+<nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <i class="fas fa-chart-line text-blue-400 text-2xl"></i>
+                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-white">Indian Stocks Dashboard</h1>
+                    <p class="text-sm text-gray-400">3500+ Stocks with Sector Classification</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-6">
+                <div class="hidden md:flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                        <span class="text-green-400 font-semibold" id="connectionStatus">LIVE</span>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <span id="liveStocksCount">0</span> stocks live
+                    </div>
+                </div>
+                <a href="index.html" class="text-gray-300 hover:text-white flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-home mr-2"></i>Home
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Dashboard -->
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h2 class="text-3xl font-bold text-white mb-2">Complete Indian Stocks Universe</h2>
+                <p class="text-gray-400">3500+ stocks across 25+ sectors with real-time classification</p>
+            </div>
+            <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <div class="text-sm text-gray-400">Last Update</div>
+                        <div id="lastUpdated" class="text-lg font-semibold text-green-400 blink">
+                            <i class="fas fa-sync-alt mr-2"></i>Loading...
+                        </div>
+                    </div>
+                    <div class="h-8 w-px bg-gray-700"></div>
+                    <div class="text-right">
+                        <div class="text-sm text-gray-400">Market</div>
+                        <div id="marketStatus" class="text-lg font-bold">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-5 border border-gray-700 hover:border-blue-500 transition-colors">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-gray-400 text-sm mb-1">NIFTY 50</div>
+                    <div id="niftyValue" class="text-2xl font-bold text-white">--</div>
+                    <div id="niftyChange" class="text-sm mt-1">--</div>
+                </div>
+                <div class="text-blue-400">
+                    <i class="fas fa-chart-line text-xl"></i>
+                </div>
+            </div>
+            <div class="text-xs text-gray-500 mt-3" id="niftyStatus">Connecting to NSE...</div>
+        </div>
+
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-5 border border-gray-700 hover:border-green-500 transition-colors">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-gray-400 text-sm mb-1">SENSEX</div>
+                    <div id="sensexValue" class="text-2xl font-bold text-white">--</div>
+                    <div id="sensexChange" class="text-sm mt-1">--</div>
+                </div>
+                <div class="text-green-400">
+                    <i class="fas fa-chart-bar text-xl"></i>
+                </div>
+            </div>
+            <div class="text-xs text-gray-500 mt-3" id="sensexStatus">Connecting to BSE...</div>
+        </div>
+
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-5 border border-gray-700 hover:border-purple-500 transition-colors">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-gray-400 text-sm mb-1">Total Stocks</div>
+                    <div id="totalStocks" class="text-2xl font-bold text-white">3,500+</div>
+                    <div class="text-sm text-gray-400 mt-1">25+ Sectors</div>
+                </div>
+                <div class="text-purple-400">
+                    <i class="fas fa-layer-group text-xl"></i>
+                </div>
+            </div>
+            <div class="text-xs text-gray-500 mt-3" id="sectorCount">Loading sectors...</div>
+        </div>
+
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-5 border border-gray-700 hover:border-yellow-500 transition-colors">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-gray-400 text-sm mb-1">Sectors</div>
+                    <div id="sectorsCount" class="text-2xl font-bold text-white">25+</div>
+                    <div class="text-sm text-gray-400 mt-1">Properly classified</div>
+                </div>
+                <div class="text-yellow-400">
+                    <i class="fas fa-tags text-xl"></i>
+                </div>
+            </div>
+            <div class="text-xs text-gray-500 mt-3">AI-powered classification</div>
+        </div>
+    </div>
+
+    <!-- Market Cap Distribution -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-white">Market Capitalization</h3>
+            <div class="text-sm text-gray-400" id="capDistribution">Loading...</div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="market-cap-chip p-4 rounded-xl border border-blue-600 bg-blue-900/20 active"
+                 onclick="filterByMarketCap('all')" id="marketCapAll">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-blue-400 font-semibold">ALL STOCKS</div>
+                        <div class="text-2xl font-bold text-white mt-1" id="capCountAll">3,500+</div>
+                    </div>
+                    <i class="fas fa-layer-group text-blue-400 text-xl"></i>
+                </div>
+            </div>
+
+            <div class="market-cap-chip p-4 rounded-xl border border-blue-600/30 text-blue-400 hover:border-blue-600 hover:bg-blue-900/20"
+                 onclick="filterByMarketCap('large')" id="marketCapLarge">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="font-semibold">LARGE CAP</div>
+                        <div class="text-2xl font-bold text-white mt-1" id="capCountLarge">100+</div>
+                    </div>
+                    <i class="fas fa-building text-blue-400/70 text-xl"></i>
+                </div>
+            </div>
+
+            <div class="market-cap-chip p-4 rounded-xl border border-green-600/30 text-green-400 hover:border-green-600 hover:bg-green-900/20"
+                 onclick="filterByMarketCap('mid')" id="marketCapMid">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="font-semibold">MID CAP</div>
+                        <div class="text-2xl font-bold text-white mt-1" id="capCountMid">150+</div>
+                    </div>
+                    <i class="fas fa-chart-line text-green-400/70 text-xl"></i>
+                </div>
+            </div>
+
+            <div class="market-cap-chip p-4 rounded-xl border border-yellow-600/30 text-yellow-400 hover:border-yellow-600 hover:bg-yellow-900/20"
+                 onclick="filterByMarketCap('small')" id="marketCapSmall">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="font-semibold">SMALL CAP</div>
+                        <div class="text-2xl font-bold text-white mt-1" id="capCountSmall">3,000+</div>
+                    </div>
+                    <i class="fas fa-chart-bar text-yellow-400/70 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="mb-6">
+        <div class="flex flex-col lg:flex-row gap-4">
+            <!-- Search Bar -->
+            <div class="flex-1">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
+                    <input type="text" id="searchStocks"
+                           class="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Search stocks (symbol, company, sector)...">
+                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
+                        <span id="searchResultsCount">0</span> results
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="flex gap-2">
+                <select id="sortBy" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 min-w-[180px]">
+                    <option value="market_cap_desc">Market Cap ▼</option>
+                    <option value="market_cap_asc">Market Cap ▲</option>
+                    <option value="change_desc">Change % ▼</option>
+                    <option value="change_asc">Change % ▲</option>
+                    <option value="price_desc">Price ▼</option>
+                    <option value="price_asc">Price ▲</option>
+                    <option value="name_asc">Name A-Z</option>
+                    <option value="name_desc">Name Z-A</option>
+                </select>
+
+                <select id="riskFilter" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 min-w-[140px]">
+                    <option value="all">All Risk</option>
+                    <option value="low">Low Risk</option>
+                    <option value="medium">Medium Risk</option>
+                    <option value="high">High Risk</option>
+                </select>
+
+                <select id="performanceFilter" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 min-w-[150px]">
+                    <option value="all">All Performance</option>
+                    <option value="gainers">Top Gainers</option>
+                    <option value="losers">Top Losers</option>
+                    <option value="active">Most Active</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sectors Filter -->
+    <div class="mb-6">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-semibold text-white">Sector Classification</h3>
+            <button id="toggleSectors" class="text-sm text-blue-400 hover:text-blue-300">
+                <i class="fas fa-chevron-down mr-1"></i> Show All Sectors
+            </button>
+        </div>
+        <div id="sectorsContainer" class="flex flex-wrap gap-2">
+            <!-- Sectors will be loaded here dynamically -->
+            <div class="sector-chip px-4 py-2 rounded-full border border-blue-600 text-blue-400 bg-blue-900/20 active"
+                 onclick="filterBySector('all')">
+                All Sectors
+            </div>
+        </div>
+        <div id="moreSectors" class="hidden flex-wrap gap-2 mt-2">
+            <!-- Additional sectors will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Stocks Table Container -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden mb-6">
+        <!-- Table Header -->
+        <div class="px-6 py-4 border-b border-gray-700 bg-gray-900/50">
+            <div class="flex justify-between items-center">
+                <div>
+                    <span class="font-semibold text-white" id="tableTitle">All Stocks</span>
+                    <span class="text-sm text-gray-400 ml-2" id="tableSubtitle">Showing 0 of 0</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-400">
+                        <i class="fas fa-clock mr-1"></i>
+                        <span id="dataFreshness">Just now</span>
+                    </div>
+                    <button onclick="refreshAllData()" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm">
+                        <i class="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stocks Table -->
+        <div class="overflow-x-auto custom-scrollbar" style="max-height: 600px;">
+            <table class="w-full dark-table">
+                <thead>
+                <tr class="bg-gray-900">
+                    <th class="py-4 px-6 text-left font-semibold text-gray-300 sticky left-0 bg-gray-900 z-20">
+                        <div class="flex items-center">
+                            <i class="fas fa-hashtag mr-2"></i>
+                            <span>Symbol & Company</span>
+                        </div>
+                    </th>
+                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
+                        <div class="flex items-center">
+                            <i class="fas fa-tag mr-2"></i>
+                            <span>Sector</span>
+                        </div>
+                    </th>
+                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
+                        <div class="flex items-center">
+                            <i class="fas fa-layer-group mr-2"></i>
+                            <span>Market Cap</span>
+                        </div>
+                    </th>
+                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
+                        <div class="flex items-center">
+                            <i class="fas fa-bullhorn mr-2"></i>
+                            <span>Recommendation</span>
+                        </div>
+                    </th>
+                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
+                        <div class="flex items-center">
+                            <i class="fas fa-shield-alt mr-2"></i>
+                            <span>Risk Level</span>
+                        </div>
+                    </th>
+                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
+                        <div class="flex items-center">
+                            <i class="fas fa-rupee-sign mr-2"></i>
+                            <span>Current Price</span>
+                        </div>
+                    </th>
+                    <th class="py-4 px-6 text-left font-semibold text-gray-300 sticky right-0 bg-gray-900 z-20">
+                        <div class="flex items-center">
+                            <i class="fas fa-bolt mr-2"></i>
+                            <span>Actions</span>
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody id="stocksTableBody">
+                <!-- Stocks will be loaded here dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="p-8 text-center">
+            <div class="inline-block">
+                <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                <div class="text-gray-400">Loading 3500+ stocks...</div>
+                <div class="text-sm text-gray-500 mt-2">Applying sector classification...</div>
+                <div class="mt-4 text-sm text-gray-500" id="loadingProgress">Initializing...</div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden p-8 text-center">
+            <i class="fas fa-search fa-3x text-gray-600 mb-4"></i>
+            <div class="text-gray-400 text-lg mb-2">No stocks found</div>
+            <div class="text-gray-500">Try changing your search or filters</div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-between items-center mb-8">
+        <div class="text-gray-400 text-sm" id="paginationInfo">
+            Loading stocks data...
+        </div>
+        <div class="flex items-center space-x-2" id="pagination">
+            <button class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 disabled:opacity-50"
+                    disabled id="prevPage">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="flex items-center space-x-1" id="pageNumbers"></div>
+            <button class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 disabled:opacity-50"
+                    disabled id="nextPage">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Data Source Info -->
+    <div class="text-center text-gray-500 text-sm border-t border-gray-800 pt-6">
+        <div class="flex flex-wrap justify-center items-center gap-4">
+            <div class="flex items-center">
+                <i class="fas fa-tags mr-2"></i>
+                <span>AI-powered sector classification</span>
+            </div>
+            <div class="w-px h-4 bg-gray-700"></div>
+            <div class="flex items-center">
+                <i class="fas fa-industry mr-2"></i>
+                <span>25+ sectors identified</span>
+            </div>
+            <div class="w-px h-4 bg-gray-700"></div>
+            <div class="flex items-center">
+                <i class="fas fa-database mr-2"></i>
+                <span>3,500+ Indian companies</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    // ==================== SECTOR CLASSIFICATION SYSTEM ====================
+    const SECTOR_MAPPING = {
+        'Banking': ['HDFCBANK', 'ICICIBANK', 'SBIN', 'KOTAKBANK', 'AXISBANK', 'INDUSINDBK',
+            'BANDHANBNK', 'IDFCFIRSTB', 'YESBANK', 'FEDERALBNK', 'RBLBANK', 'CUB',
+            'SOUTHBANK', 'KARURVYSYA', 'J&KBANK', 'DCBBANK', 'CSBBANK', 'UCOBANK',
+            'CENTRALBK', 'INDIANB', 'UNIONBANK', 'BANKBARODA', 'CANBK', 'PNB',
+            'BANKINDIA', 'MAHABANK', 'UJJIVANSFB', 'AUBANK', 'EQUITAS'],
+
+        'Finance': ['BAJFINANCE', 'BAJAJFINSV', 'CHOLAFIN', 'MUTHOOTFIN', 'MANAPPURAM',
+            'PFC', 'RECLTD', 'HDFCAMC', 'ICICIPRULI', 'SBILIFE', 'HDFCLIFE',
+            'ICICIGI', 'SHRIRAMCIT', 'BAJAJHLDNG', 'M&MFIN', 'IIFL', 'LICHSGFIN',
+            'SUNDARMFIN', 'MASFIN', 'MOTILALOFS', 'EDELWEISS', 'JMCPROJECT'],
+
+        'IT': ['TCS', 'INFY', 'WIPRO', 'HCLTECH', 'TECHM', 'LTIM', 'MPHASIS', 'LTI',
+            'PERSISTENT', 'COFORGE', 'MINDTREE', 'LTTS', 'TATAELXSI', 'CYIENT',
+            'MPHASIS', 'ZENSARTECH', 'HEXAWARE', 'NIITTECH', 'SONATSOFTW', 'NEWGEN',
+            'AFFLE', 'ROUTE', 'TANLA', 'INTELLECT', 'EASEMYTRIP', 'NAUKRI', 'TRENT'],
+
+        'Automobile': ['MARUTI', 'TATAMOTORS', 'M&M', 'BAJAJ-AUTO', 'HEROMOTOCO',
+            'EICHERMOT', 'ASHOKLEY', 'TVSMOTOR', 'ESCORTS', 'BALKRISIND',
+            'MRF', 'APOLLOTYRE', 'CEATLTD', 'JKTYRE', 'BHARATFORG', 'SONACOMS',
+            'MOTHERSUMI', 'SUPRAJIT', 'SAMVARDHANA', 'BOSCHLTD', 'MOTHERSON'],
+
+        'Pharma': ['SUNPHARMA', 'DRREDDY', 'CIPLA', 'LUPIN', 'DIVISLAB', 'AUROPHARMA',
+            'BIOCON', 'TORNTPHARM', 'ALKEM', 'GLENMARK', 'CADILAHC', 'IPCALAB',
+            'LAURUSLABS', 'GRANULES', 'NATCOPHARM', 'AJANTPHARM', 'SANOFI',
+            'PFIZER', 'ABBOTINDIA', 'GLAXO', 'NOVARTIND', 'ASTRAZEN', 'JBCHEPHARM'],
+
+        'FMCG': ['HINDUNILVR', 'ITC', 'NESTLEIND', 'BRITANNIA', 'DABUR', 'GODREJCP',
+            'MARICO', 'COLPAL', 'EMAMILTD', 'PGHH', 'PGHL', 'VBL', 'RADICO',
+            'UNITEDSPR', 'UBL', 'MCDOWELL-N', 'JUBLFOOD', 'DMART', 'VBL'],
+
+        'Energy': ['RELIANCE', 'ONGC', 'IOC', 'BPCL', 'HINDPETRO', 'GAIL', 'PETRONET',
+            'GSPL', 'IGL', 'MGL', 'GUJGASLTD', 'ADANIGAS', 'ATGL', 'AEGISLOG',
+            'NTPC', 'POWERGRID', 'TATAPOWER', 'ADANIPOWER', 'JSWENERGY', 'TORNTPOWER',
+            'NHPC', 'SJVN', 'NLCINDIA', 'RECLTD', 'PFC'],
+
+        'Metals': ['TATASTEEL', 'JSWSTEEL', 'HINDALCO', 'VEDL', 'JINDALSTEL', 'SAIL',
+            'NMDC', 'HINDCOPPER', 'NATIONALUM', 'HINDZINC', 'MOIL', 'APLAPOLLO',
+            'RATNAMANI', 'MAITHANALL', 'SHYAMMETL', 'KIRLOSIND', 'MANAKALUCO'],
+
+        'Infrastructure': ['LT', 'ADANIPORTS', 'IRB', 'GMRINFRA', 'PNCINFRA', 'NCC',
+            'KEC', 'KALYANKJIL', 'POWERMECH', 'HGINFRA', 'GRINFRA',
+            'ADANIGREEN', 'ADANITRANS', 'IRCON', 'RVNL', 'NBCC', 'GAYAPROJ',
+            'ASHOKA', 'MBLINFRA', 'MEP'],
+
+        'Telecom': ['BHARTIARTL', 'IDEA', 'MTNL', 'TATACOMM', 'TECHM', 'ITI', 'HFCL',
+            'TEJASNET', 'STERLITE', 'VODAFONE', 'INDUSTOWER', 'GTLINFRA'],
+
+        'Real Estate': ['DLF', 'GODREJPROP', 'OBEROIRLTY', 'PRESTIGE', 'SUNTEK', 'BRIGADE',
+            'MAHLIFE', 'SOBHA', 'PURVA', 'KOLTEPATIL', 'PHOENIXLTD', 'MINDSPACE',
+            'LODHA', 'MEGASTAR', 'ARVIND', 'MAHLOG'],
+
+        'Healthcare': ['APOLLOHOSP', 'FORTIS', 'NARAYANA', 'MAXHEALTH', 'HCG', 'KOVAI',
+            'SHALBY', 'GRANULES', 'LAURUSLABS', 'GLAND', 'ASTERDM', 'METROPOLIS',
+            'THYROCARE', 'LUPIN', 'DRREDDY', 'CIPLA'],
+
+        'Chemicals': ['UPL', 'PIDILITIND', 'SRF', 'TATACHEM', 'AARTIIND', 'DEEPAKNTR',
+            'NAVINFLUOR', 'GUJALKALI', 'GNFC', 'FINEORG', 'PIIND', 'VINATIORGA',
+            'SOLARINDS', 'ANUP', 'BALAMINES', 'ALKYLAMINE', 'CHEMCON', 'TATVA'],
+
+        'Consumer Goods': ['TITAN', 'ASIANPAINT', 'BERGEPAINT', 'KANSAINER', 'AKZOINDIA',
+            'SHREECEM', 'ACC', 'AMBUJACEM', 'RAMCOCEM', 'ULTRACEMCO',
+            'DALBHARAT', 'JKLAKSHMI', 'HEIDELBERG', 'CENTURYPLY', 'GREENPANEL',
+            'SOMANYCERA', 'KAJARIACER', 'HAVELLS', 'CROMPTON', 'BAJAJELEC',
+            'VGUARD', 'SYMPHONY', 'WHIRLPOOL', 'BLUESTARCO', 'VOLTAS'],
+
+        'Oil & Gas': ['RELIANCE', 'ONGC', 'IOC', 'BPCL', 'HINDPETRO', 'GAIL', 'OIL',
+            'PETRONET', 'AEGISLOG', 'GUJGAS', 'MGL', 'IGL', 'ADANIGAS',
+            'ATGL', 'GSPL', 'LINDEINDIA', 'CHENNPETRO', 'MRPL'],
+
+        'Cement': ['ULTRACEMCO', 'SHREECEM', 'ACC', 'AMBUJACEM', 'RAMCOCEM', 'DALBHARAT',
+            'JKLAKSHMI', 'JKCEment', 'HEIDELBERG', 'BIRLACORPN', 'SAGCEM',
+            'MANGALMCEM', 'KCP', 'BINANI', 'PRISMJOHNSON', 'NUVOCO'],
+
+        'Textiles': ['ARVIND', 'KPRMILL', 'VARDHACRLC', 'TRIDENT', 'WELSPUNIND', 'ALOKTEXT',
+            'BOMDYEING', 'SPENTEX', 'RUCHIRA', 'SUTLEJTEX', 'NAHARSPING', 'SANGAMIND',
+            'GTNTEX', 'LOYALTEX', 'BANSWRAS', 'SURYALAXMI', 'PIONEEREMB'],
+
+        'Media': ['ZEEL', 'SUNTV', 'DISHTV', 'TV18BRDCST', 'TVTODAY', 'NAZARA', 'INOXLEISUR',
+            'PVRINOX', 'HATHWAY', 'DEN', 'SITI', 'BALAJITELE', 'SARE', 'ENIL',
+            'MAGNUM', 'RADIOCITY', 'NDTV', 'NETWORK18'],
+
+        'Agriculture': ['RALLIS', 'DCM', 'UPL', 'COROMANDEL', 'BAYERCROP', 'DEEPAKFERT',
+            'GUJSTATE', 'CHAMBLFERT', 'GSFC', 'GNFC', 'FACT', 'RCF', 'NATIONALUM',
+            'ZUARI', 'NFL', 'KHADIM', 'KAIRALI'],
+
+        'Aviation': ['INDIGO', 'SPICEJET', 'GLOBALVECT', 'JETAIRWAYS', 'AIRINDIA'],
+
+        'Retail': ['DMART', 'TRENT', 'V2RETAIL', 'VMART', 'SHOPERSTOP', 'SPENCERS',
+            'AVENUE', 'PANTALOON', 'ARVINDFASN', 'BATAINDIA', 'LIBERTY',
+            'METROBRAND', 'CANTABIL', 'TCNSBRANDS', 'GOCOLORS', 'MAX', 'VBL'],
+
+        'Insurance': ['HDFCLIFE', 'SBILIFE', 'ICICIPRULI', 'MAXLIFE', 'LICI', 'ICICIGI',
+            'GICRE', 'NIACL', 'NEWINDIA', 'BAJAJALLZ'],
+
+        'Logistics': ['CONCOR', 'BLUEDART', 'TCI', 'GATI', 'VRL', 'MAHLOG', 'SNOWMAN',
+            'DELHIVERY', 'CONTAINER', 'ALLCRGO'],
+
+        'Power': ['NTPC', 'POWERGRID', 'TATAPOWER', 'ADANIPOWER', 'TORNTPOWER', 'JSWENERGY',
+            'CESC', 'NHPC', 'SJVN', 'NLCINDIA', 'GIPCL', 'KPIGREEN', 'SUZLON'],
+
+        'Defence': ['HAL', 'BEL', 'BDL', 'MIL', 'DATA PATTERNS', 'PARAS', 'ASTRA', 'MTAR'],
+
+        'Railway': ['IRCON', 'RVNL', 'TEXRAIL', 'TITAGARH', 'JWL', 'CONCOR', 'RAILTEL'],
+
+        'PSU': ['ONGC', 'NTPC', 'COALINDIA', 'IOC', 'BPCL', 'POWERGRID', 'GAIL', 'BHEL',
+            'SAIL', 'HAL', 'BEL', 'MMTC', 'STC', 'NMDC', 'NLC', 'SJVN', 'NHPC']
+    };
+
+    function categorizeStock(stockName, symbol) {
+        const stockNameUpper = (stockName || '').toString().toUpperCase();
+        const symbolUpper = (symbol || '').toString().toUpperCase();
+
+        // 1️⃣ Exact symbol match first (fast & accurate)
+        for (const [sector, symbols] of Object.entries(SECTOR_MAPPING)) {
+            if (symbols.includes(symbolUpper)) {
+                return sector;
+            }
+        }
+
+        // 2️⃣ Keyword-based fallback
+        if (stockNameUpper.includes('BANK')) return 'Banking';
+        if (stockNameUpper.includes('FIN')) return 'Finance';
+        if (stockNameUpper.includes('PHARMA') || stockNameUpper.includes('DRUG')) return 'Pharma';
+        if (stockNameUpper.includes('TECH') || stockNameUpper.includes('SOFTWARE')) return 'IT';
+        if (stockNameUpper.includes('AUTO') || stockNameUpper.includes('MOTOR')) return 'Automobile';
+        if (stockNameUpper.includes('OIL') || stockNameUpper.includes('GAS')) return 'Oil & Gas';
+        if (stockNameUpper.includes('POWER')) return 'Power';
+        if (stockNameUpper.includes('STEEL') || stockNameUpper.includes('METAL')) return 'Metals';
+        if (stockNameUpper.includes('CEMENT')) return 'Cement';
+        if (stockNameUpper.includes('CHEM')) return 'Chemicals';
+        if (stockNameUpper.includes('TEXTILE') || stockNameUpper.includes('FABRIC')) return 'Textiles';
+        if (stockNameUpper.includes('REAL ESTATE') || stockNameUpper.includes('PROPERTY')) return 'Real Estate';
+        if (stockNameUpper.includes('INFRA')) return 'Infrastructure';
+        if (stockNameUpper.includes('RETAIL') || stockNameUpper.includes('MART')) return 'Retail';
+        if (stockNameUpper.includes('MEDIA') || stockNameUpper.includes('TV')) return 'Media';
+        if (stockNameUpper.includes('TELECOM')) return 'Telecom';
+        if (stockNameUpper.includes('HEALTH') || stockNameUpper.includes('HOSPITAL')) return 'Healthcare';
+        if (stockNameUpper.includes('AGRI') || stockNameUpper.includes('FERTILIZER')) return 'Agriculture';
+        if (stockNameUpper.includes('AIR') || stockNameUpper.includes('AVIATION')) return 'Aviation';
+        if (stockNameUpper.includes('INSURANCE')) return 'Insurance';
+        if (stockNameUpper.includes('LOGISTICS') || stockNameUpper.includes('TRANSPORT')) return 'Logistics';
+        if (stockNameUpper.includes('DEFENCE') || stockNameUpper.includes('MILITARY')) return 'Defence';
+        if (stockNameUpper.includes('RAIL')) return 'Railway';
+
+        // 3️⃣ PSU fallback
+        const psuKeywords = ['INDIA', 'CORPORATION', 'AUTHORITY', 'BOARD'];
+        if (psuKeywords.some(k => stockNameUpper.includes(k))) {
+            return 'PSU';
+        }
+
+        // 4️⃣ Final fallback
+        return 'Other';
+    }
+
+
+    // Get sector color class
+    function getSectorColorClass(sector) {
+        const sectorMap = {
+            'Banking': 'sector-banking',
+            'Finance': 'sector-finance',
+            'IT': 'sector-it',
+            'Automobile': 'sector-automobile',
+            'Pharma': 'sector-pharma',
+            'FMCG': 'sector-fmcg',
+            'Energy': 'sector-energy',
+            'Metals': 'sector-metals',
+            'Infrastructure': 'sector-infrastructure',
+            'Telecom': 'sector-telecom',
+            'Real Estate': 'sector-real-estate',
+            'Healthcare': 'sector-healthcare',
+            'Chemicals': 'sector-chemicals',
+            'Consumer Goods': 'sector-consumer-goods',
+            'Oil & Gas': 'sector-oil-gas',
+            'Cement': 'sector-cement',
+            'Textiles': 'sector-textiles',
+            'Media': 'sector-media',
+            'Agriculture': 'sector-agriculture',
+            'Aviation': 'sector-aviation',
+            'Retail': 'sector-retail',
+            'Insurance': 'sector-insurance',
+            'Logistics': 'sector-logistics',
+            'Power': 'sector-power',
+            'Defence': 'sector-defence',
+            'Railway': 'sector-railway',
+            'PSU': 'sector-psu'
+        };
+
+        return sectorMap[sector] || 'sector-other';
+    }
+
+    // ==================== CONFIGURATION ====================
+    const CONFIG = {
+        stocksPerPage: 25,
+        updateInterval: 30000,
+        initialLoadBatch: 100,
+        maxStocksToLoad: 3500,
+
+        apiConfig: {
+            yahooFinance: true,
+            alphaVantage: { enabled: true, key: 'demo' },
+            fallbackEnabled: true
+        },
+
+        marketCapThresholds: {
+            large: 20000,
+            mid: 5000,
+            small: 500,
+            micro: 0
+        }
+    };
+
+    // ==================== STATE MANAGEMENT ====================
+    let allStocksData = [];
+    let displayedStocks = [];
+    let currentPage = 1;
+    let selectedSector = 'all';
+    let selectedMarketCap = 'all';
+    let selectedRisk = 'all';
+    let selectedPerformance = 'all';
+    let currentSort = 'market_cap_desc';
+    let searchQuery = '';
+
+    let livePrices = {};
+    let marketStatus = 'CLOSED';
+    let lastUpdateTime = null;
+    let isLoading = true;
+    let stocksLoaded = 0;
+    let totalStocksToLoad = 3500;
+    let sectorsDistribution = {};
+
+    // ==================== INITIALIZATION ====================
+    document.addEventListener('DOMContentLoaded', async () => {
+        console.log('🚀 Initializing Indian Stocks Dashboard with Sector Classification...');
+        showLoadingState();
+
+        try {
+            await loadMarketIndices();
+            await loadAllStocks();
+            initializeFilters();
+            hideLoadingState();
+            console.log('✅ Dashboard initialized successfully');
+        } catch (error) {
+            console.error('Initialization error:', error);
+            document.getElementById('loadingProgress').textContent = 'Error: ' + error.message;
+        }
+    });
+
+    function parseCSVLine(line) {
+        let delimiter = ',';
+
+        if (line.includes('\t')) {
+            delimiter = '\t';
+        } else if (line.includes(';')) {
+            delimiter = ';';
+        }
+
+        const result = [];
+        let current = '';
+        let insideQuotes = false;
+
+        for (let char of line) {
+            if (char === '"') {
+                insideQuotes = !insideQuotes;
+            } else if (char === delimiter && !insideQuotes) {
+                result.push(current);
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+
+        result.push(current);
+        return result.map(v => v.replace(/^"|"$/g, '').trim());
+    }
+
+
+    async function loadCSV(filePath) {
+        const response = await fetch(filePath);
+        const text = await response.text();
+        const lines = text.split('\n').filter(l => l.trim());
+
+        const headers = parseCSVLine(lines[0]).map(h => h.trim().toLowerCase());
+
+        const symbolIndex = headers.findIndex(h => h === 'symbol');
+        const nameIndex = headers.findIndex(h => h === 'company name');
+        const industryIndex = headers.findIndex(h => h === 'industry');
+
+        if (symbolIndex === -1 || nameIndex === -1 || industryIndex === -1) {
+            console.error('CSV headers:', headers);
+            throw new Error('Required columns not found in ' + filePath);
+        }
+
+        // ✅ DEFINE LOCALLY
+        const stocks = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const cols = parseCSVLine(lines[i]);
+            if (!cols[symbolIndex] || !cols[nameIndex]) continue;
+
+            stocks.push({
+                symbol: cols[symbolIndex].trim(),
+                company: cols[nameIndex].trim(),
+                industry: cols[industryIndex].trim()
+            });
+        }
+
+        // ✅ RETURN
+        return stocks;
+    }
+
+
+    async function loadAllStocks() {
+        console.log('📥 Loading REAL Indian stocks from CSV files...');
+
+        showLoadingState();
+
+        const files = [
+            './data/ind_niftytotalmarket_list.csv',
+            './data/ind_nifty500list.csv',
+            './data/ind_niftymidcap150list.csv',
+            './data/ind_niftymidsmallcap400list.csv',
+            './data/ind_niftysmallcap250list.csv'
+        ];
+
+        let realStocks = [];
+
+        for (const file of files) {
+            const stocks = await loadCSV(file);
+            realStocks.push(...stocks);
+        }
+
+        // 🔥 Remove duplicates by symbol
+        const uniqueMap = new Map();
+        realStocks.forEach(s => uniqueMap.set(s.symbol, s));
+        realStocks = [...uniqueMap.values()];
+
+        console.log(`✅ Loaded ${realStocks.length} REAL companies`);
+
+        // Reset state
+        allStocksData = [];
+        sectorsDistribution = {};
+
+        realStocks.forEach((item, index) => {
+            const stock = createStockObjectFromCSV(item, index);
+            allStocksData.push(stock);
+
+            sectorsDistribution[stock.sector] = (sectorsDistribution[stock.sector] || 0) + 1;
+        });
+
+        document.getElementById('totalStocks').textContent = allStocksData.length.toLocaleString();
+
+        window.allStocksData = allStocksData; // 👈 OPTIONAL, FOR DEBUG ONLY
+
+        updateSectorChips();
+        initializeFilters();
+        hideLoadingState();
+    }
+
+
+
+    async function processStockBatch(batch) {
+        const stocks = [];
+
+        for (let symbol of batch) {
+            const stock = createStockObject(symbol, allStocksData.length);
+            stocks.push(stock);
+
+            // Update sector distribution
+            if (sectorsDistribution[stock.sector] !== undefined) {
+                sectorsDistribution[stock.sector]++;
+            } else {
+                sectorsDistribution[stock.sector] = 1;
+            }
+        }
+
+        allStocksData.push(...stocks);
+    }
+
+    function createStockObject(symbol, index) {
+        const name = generateCompanyName(symbol);
+        const sector = categorizeStock(name, symbol);
+        const marketCapValue = generateMarketCap(index);
+        const marketCapType = getMarketCapType(marketCapValue);
+        const riskLevel = getRiskLevel(marketCapType);
+        const basePrice = generateInitialPrice(symbol);
+        const changePercent = (Math.random() * 10 - 5);
+        const change = (basePrice * changePercent) / 100;
+
+        return {
+            id: `stock-${index + 1}`,
+            symbol: symbol,
+            name: name,
+            sector: sector,
+            marketCap: marketCapValue,
+            marketCapType: marketCapType,
+            riskLevel: riskLevel,
+            price: basePrice + change,
+            previousClose: basePrice,
+            change: change,
+            changePercent: changePercent,
+            volume: Math.floor(Math.random() * 10000000) + 100000,
+            recommendation: getRecommendation(changePercent, riskLevel),
+            lastUpdated: new Date(),
+            isLive: false
+        };
+    }
+
+    function createStockObjectFromCSV(item, index) {
+        const sector = categorizeStock(item.company, item.symbol);
+        const marketCapValue = generateMarketCap(index);
+        const marketCapType = getMarketCapType(marketCapValue);
+        const riskLevel = getRiskLevel(marketCapType);
+        const basePrice = generateInitialPrice(item.symbol);
+        const changePercent = (Math.random() * 6 - 3);
+        const change = (basePrice * changePercent) / 100;
+
+        return {
+            id: `stock-${index + 1}`,
+            symbol: item.symbol,
+            name: item.company,
+            sector,
+            marketCap: marketCapValue,
+            marketCapType,
+            riskLevel,
+            price: basePrice + change,
+            previousClose: basePrice,
+            change,
+            changePercent,
+            volume: Math.floor(Math.random() * 1e7) + 1e5,
+            recommendation: getRecommendation(changePercent, riskLevel),
+            lastUpdated: new Date(),
+            isLive: false
+        };
+    }
+
+
+    function generateCompanyName(symbol) {
+        const nameMap = {
+            'RELIANCE': 'Reliance Industries Limited',
+            'TCS': 'Tata Consultancy Services Limited',
+            'HDFCBANK': 'HDFC Bank Limited',
+            'INFY': 'Infosys Limited',
+            'ICICIBANK': 'ICICI Bank Limited',
+            'HINDUNILVR': 'Hindustan Unilever Limited',
+            'ITC': 'ITC Limited',
+            'SBIN': 'State Bank of India',
+            'BHARTIARTL': 'Bharti Airtel Limited',
+            'KOTAKBANK': 'Kotak Mahindra Bank Limited',
+            'WIPRO': 'Wipro Limited',
+            'AXISBANK': 'Axis Bank Limited',
+            'LT': 'Larsen & Toubro Limited',
+            'TITAN': 'Titan Company Limited',
+            'MARUTI': 'Maruti Suzuki India Limited',
+            'ASIANPAINT': 'Asian Paints Limited',
+            'SUNPHARMA': 'Sun Pharmaceutical Industries Limited',
+            'BAJFINANCE': 'Bajaj Finance Limited',
+            'M&M': 'Mahindra & Mahindra Limited',
+            'ULTRACEMCO': 'UltraTech Cement Limited',
+            'NTPC': 'NTPC Limited',
+            'POWERGRID': 'Power Grid Corporation of India Limited',
+            'TATAMOTORS': 'Tata Motors Limited',
+            'BAJAJFINSV': 'Bajaj Finserv Limited',
+            'TATASTEEL': 'Tata Steel Limited',
+            'HCLTECH': 'HCL Technologies Limited',
+            'JSWSTEEL': 'JSW Steel Limited',
+            'INDUSINDBK': 'IndusInd Bank Limited',
+            'ONGC': 'Oil and Natural Gas Corporation Limited',
+            'NESTLEIND': 'Nestle India Limited'
+        };
+
+        if (nameMap[symbol]) return nameMap[symbol];
+
+        // Generate company name based on symbol
+        if (symbol.includes('BANK')) return `${symbol.replace('BANK', '')} Bank Limited`;
+        if (symbol.includes('TECH')) return `${symbol.replace('TECH', '')} Technologies Limited`;
+        if (symbol.includes('PHARMA')) return `${symbol.replace('PHARMA', '')} Pharmaceuticals Limited`;
+        if (symbol.includes('FIN')) return `${symbol.replace('FIN', '')} Financial Services Limited`;
+        if (symbol.includes('AUTO')) return `${symbol.replace('AUTO', '')} Automobiles Limited`;
+        if (symbol.includes('POWER')) return `${symbol.replace('POWER', '')} Power Limited`;
+        if (symbol.includes('CEMENT')) return `${symbol.replace('CEMENT', '')} Cement Limited`;
+
+        return `${symbol} Limited`;
+    }
+
+    function generateMarketCap(index) {
+        if (index < 50) return Math.random() * 100000000000 + 50000000000;
+        if (index < 150) return Math.random() * 50000000000 + 10000000000;
+        if (index < 500) return Math.random() * 10000000000 + 1000000000;
+        if (index < 1000) return Math.random() * 5000000000 + 100000000;
+        return Math.random() * 1000000000 + 10000000;
+    }
+
+    function generateInitialPrice(symbol) {
+        const basePrices = {
+            'RELIANCE': 2500, 'TCS': 3500, 'HDFCBANK': 1600, 'INFY': 1500,
+            'ICICIBANK': 1000, 'HINDUNILVR': 2500, 'ITC': 400, 'SBIN': 600,
+            'BHARTIARTL': 800, 'KOTAKBANK': 1800, 'default': 100
+        };
+        return (basePrices[symbol] || basePrices.default) * (0.8 + Math.random() * 0.4);
+    }
+
+    function getMarketCapType(marketCap) {
+        if (marketCap >= CONFIG.marketCapThresholds.large) return 'large';
+        if (marketCap >= CONFIG.marketCapThresholds.mid) return 'mid';
+        if (marketCap >= CONFIG.marketCapThresholds.small) return 'small';
+        return 'micro';
+    }
+
+    function getRiskLevel(marketCapType) {
+        switch(marketCapType) {
+            case 'large': return 'low';
+            case 'mid': return 'medium';
+            default: return 'high';
+        }
+    }
+
+    function getRecommendation(changePercent, riskLevel) {
+        let recommendation;
+
+        if (changePercent > 5) {
+            recommendation = riskLevel === 'high' ? 'Buy' : 'Strong Buy';
+        } else if (changePercent > 2) {
+            recommendation = 'Buy';
+        } else if (changePercent > -2) {
+            recommendation = 'Hold';
+        } else if (changePercent > -5) {
+            recommendation = 'Sell';
+        } else {
+            recommendation = riskLevel === 'high' ? 'Strong Sell' : 'Sell';
+        }
+
+        const classes = {
+            'Strong Buy': 'recommendation-strong-buy',
+            'Buy': 'recommendation-buy',
+            'Hold': 'recommendation-hold',
+            'Sell': 'recommendation-sell',
+            'Strong Sell': 'recommendation-strong-sell'
+        };
+
+        return {
+            text: recommendation,
+            class: classes[recommendation]
+        };
+    }
+
+    // ==================== SECTOR DISTRIBUTION ====================
+    function updateSectorChips() {
+        const container = document.getElementById('sectorsContainer');
+        const moreContainer = document.getElementById('moreSectors');
+
+        // Keep "All Sectors" chip
+        container.innerHTML = '<div class="sector-chip px-4 py-2 rounded-full border border-blue-600 text-blue-400 bg-blue-900/20 active" onclick="filterBySector(\'all\')">All Sectors</div>';
+        moreContainer.innerHTML = '';
+
+        // Get sectors with stocks
+        const sectorsWithStocks = Object.entries(sectorsDistribution)
+            .filter(([sector, count]) => count > 0)
+            .sort((a, b) => b[1] - a[1]);
+
+        // Create sector chips
+        sectorsWithStocks.forEach(([sector, count], index) => {
+            const chip = document.createElement('div');
+            const sectorClass = getSectorColorClass(sector);
+
+            chip.className = `${sectorClass} sector-chip px-4 py-2 rounded-full text-gray-300 hover:text-white cursor-pointer`;
+            chip.innerHTML = `
+                <span class="font-medium">${sector}</span>
+                <span class="text-xs bg-gray-800 rounded-full px-2 py-0.5 ml-2">${count}</span>
+            `;
+
+            chip.addEventListener('click', () => filterBySector(sector));
+
+            if (index < 8) {
+                container.appendChild(chip);
+            } else {
+                moreContainer.appendChild(chip);
+            }
+        });
+
+        updateSectorCounts();
+    }
+
+    function updateSectorCounts() {
+        const totalSectors = Object.keys(sectorsDistribution).filter(s => sectorsDistribution[s] > 0).length;
+        document.getElementById('sectorsCount').textContent = `${totalSectors}+`;
+        document.getElementById('sectorCount').textContent = `${totalSectors} sectors identified`;
+    }
+
+    // ==================== MARKET DATA ====================
+    async function loadMarketIndices() {
+        try {
+            // Simulate market data for demo
+            const niftyValue = 22000 + Math.random() * 2000;
+            const sensexValue = 72000 + Math.random() * 5000;
+
+            updateIndexDisplay('nifty', niftyValue, 22000);
+            updateIndexDisplay('sensex', sensexValue, 72000);
+
+            updateMarketStatus();
+            updateLastUpdated();
+
+        } catch (error) {
+            console.error('Error loading market indices:', error);
+        }
+    }
+
+    function updateIndexDisplay(index, currentPrice, previousClose) {
+        const change = currentPrice - previousClose;
+        const changePercent = (change / previousClose) * 100;
+        const isPositive = change >= 0;
+
+        const formattedPrice = index === 'sensex'
+            ? currentPrice.toLocaleString('en-IN', {maximumFractionDigits: 0})
+            : currentPrice.toFixed(2);
+
+        const formattedChange = `${isPositive ? '+' : ''}${change.toFixed(2)} (${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)`;
+
+        document.getElementById(`${index}Value`).textContent = formattedPrice;
+        document.getElementById(`${index}Change`).innerHTML = `
+            <span class="${isPositive ? 'text-green-400' : 'text-red-400'} font-semibold">
+                ${formattedChange}
+            </span>
+        `;
+        document.getElementById(`${index}Status`).innerHTML = `
+            <i class="fas fa-circle text-green-400 mr-1"></i> Live
+        `;
+    }
+
+    // ==================== FILTERING & RENDERING ====================
+    function applyFiltersAndRender() {
+        if (allStocksData.length === 0) {
+            showEmptyState();
+            return;
+        }
+
+        displayedStocks = allStocksData.filter(stock => {
+            // Market cap filter
+            if (selectedMarketCap !== 'all' && stock.marketCapType !== selectedMarketCap) return false;
+
+            // Sector filter
+            if (selectedSector !== 'all' && stock.sector !== selectedSector) return false;
+
+            // Risk filter
+            if (selectedRisk !== 'all' && stock.riskLevel !== selectedRisk) return false;
+
+            // Performance filter
+            if (selectedPerformance !== 'all') {
+                if (selectedPerformance === 'gainers' && stock.changePercent <= 0) return false;
+                if (selectedPerformance === 'losers' && stock.changePercent >= 0) return false;
+                if (selectedPerformance === 'active' && stock.volume < 1000000) return false;
+            }
+
+            // Search filter
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                if (!stock.symbol.toLowerCase().includes(query) &&
+                    !stock.name.toLowerCase().includes(query) &&
+                    !stock.sector.toLowerCase().includes(query)) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        applySorting();
+        updateTableInfo();
+        renderStocksTable();
+    }
+
+    function applySorting() {
+        switch(currentSort) {
+            case 'market_cap_desc':
+                displayedStocks.sort((a, b) => b.marketCap - a.marketCap);
+                break;
+            case 'market_cap_asc':
+                displayedStocks.sort((a, b) => a.marketCap - b.marketCap);
+                break;
+            case 'change_desc':
+                displayedStocks.sort((a, b) => b.changePercent - a.changePercent);
+                break;
+            case 'change_asc':
+                displayedStocks.sort((a, b) => a.changePercent - b.changePercent);
+                break;
+            case 'price_desc':
+                displayedStocks.sort((a, b) => b.price - a.price);
+                break;
+            case 'price_asc':
+                displayedStocks.sort((a, b) => a.price - b.price);
+                break;
+            case 'name_asc':
+                displayedStocks.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case 'name_desc':
+                displayedStocks.sort((a, b) => b.name.localeCompare(a.name));
+                break;
+        }
+    }
+
+    function renderStocksTable() {
+        const tbody = document.getElementById('stocksTableBody');
+
+        if (displayedStocks.length === 0) {
+            showEmptyState();
+            return;
+        }
+
+        hideEmptyState();
+
+        const startIndex = (currentPage - 1) * CONFIG.stocksPerPage;
+        const endIndex = startIndex + CONFIG.stocksPerPage;
+        const pageStocks = displayedStocks.slice(startIndex, endIndex);
+
+        tbody.innerHTML = '';
+
+        pageStocks.forEach((stock, index) => {
+            const row = createStockRow(stock, startIndex + index + 1);
+            tbody.appendChild(row);
+        });
+
+        updatePagination();
+    }
+
+    function createStockRow(stock, index) {
+        const row = document.createElement('tr');
+        row.className = 'stock-row border-b border-gray-700 hover:bg-gray-750';
+
+        const marketCapFormatted = formatMarketCap(stock.marketCap);
+        const marketCapClass = getMarketCapClass(stock.marketCapType);
+        const sectorColorClass = getSectorColorClass(stock.sector);
+
+        row.innerHTML = `
+            <td class="py-4 px-6 sticky left-0 bg-gray-800 z-10">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-lg ${sectorColorClass} flex items-center justify-center mr-3">
+                        <span class="font-bold text-white">${stock.symbol.charAt(0)}</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center">
+                            <span class="font-bold text-white mr-2">${stock.symbol}</span>
+                            ${stock.isLive ? '<span class="text-xs bg-green-900/30 text-green-400 px-2 py-0.5 rounded">LIVE</span>' : ''}
+                        </div>
+                        <div class="text-sm text-gray-400 truncate max-w-[200px]">${stock.name}</div>
+                    </div>
+                </div>
+            </td>
+            <td class="py-4 px-6">
+                <div class="${sectorColorClass} px-3 py-1 rounded-full text-xs font-semibold inline-block">
+                    ${stock.sector}
+                </div>
+            </td>
+            <td class="py-4 px-6">
+                <div class="${marketCapClass} inline-block">${marketCapFormatted}</div>
+                <div class="text-xs text-gray-500 mt-1">${stock.marketCapType.toUpperCase()} CAP</div>
+            </td>
+            <td class="py-4 px-6">
+                <span class="${stock.recommendation.class}">${stock.recommendation.text}</span>
+            </td>
+            <td class="py-4 px-6">
+                <span class="${stock.riskLevel === 'low' ? 'risk-low' : stock.riskLevel === 'medium' ? 'risk-medium' : 'risk-high'}">
+                    ${stock.riskLevel.toUpperCase()}
+                </span>
+            </td>
+            <td class="py-4 px-6">
+                <div class="font-bold text-white stock-price" id="price-${stock.symbol}">₹${formatNumber(stock.price)}</div>
+                <div class="text-sm ${stock.change >= 0 ? 'positive-change' : 'negative-change'}">
+                    ${stock.change >= 0 ? '+' : ''}₹${stock.change.toFixed(2)}
+                </div>
+            </td>
+            <td class="py-4 px-6 sticky right-0 bg-gray-800 z-10">
+            <button onclick="analyzeStock('${stock.symbol}')"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors w-full">
+               <i class="fas fa-chart-bar mr-2"></i> Analyze
+            </button>
+            </td>
+        `;
+
+        return row;
+    }
+
+    function getMarketCapClass(type) {
+        const classes = {
+            'large': 'large-cap',
+            'mid': 'mid-cap',
+            'small': 'small-cap',
+            'micro': 'micro-cap'
+        };
+        return classes[type] || 'large-cap';
+    }
+
+    function formatMarketCap(value) {
+        if (value >= 100000000000) return '₹' + (value / 100000000000).toFixed(1) + 'L Cr';
+        if (value >= 10000000000) return '₹' + (value / 10000000000).toFixed(1) + 'K Cr';
+        if (value >= 1000000000) return '₹' + (value / 1000000000).toFixed(1) + ' Cr';
+        if (value >= 10000000) return '₹' + (value / 10000000).toFixed(1) + ' L';
+        return '₹' + (value / 100000).toFixed(1) + ' K';
+    }
+
+    function formatNumber(num) {
+        return num.toFixed(2);
+    }
+
+    // ==================== UI STATE MANAGEMENT ====================
+    function showLoadingState() {
+        document.getElementById('loadingState').classList.remove('hidden');
+        document.getElementById('emptyState').classList.add('hidden');
+        isLoading = true;
+    }
+
+    function hideLoadingState() {
+        document.getElementById('loadingState').classList.add('hidden');
+        isLoading = false;
+    }
+
+    function showEmptyState() {
+        document.getElementById('emptyState').classList.remove('hidden');
+        document.getElementById('stocksTableBody').innerHTML = '';
+        document.getElementById('loadingState').classList.add('hidden');
+    }
+
+    function hideEmptyState() {
+        document.getElementById('emptyState').classList.add('hidden');
+    }
+
+    function updateLoadingProgress(current, total) {
+        const percent = Math.round((current / total) * 100);
+        document.getElementById('loadingProgress').textContent =
+            `Loaded ${current} of ${total} stocks (${percent}%)`;
+    }
+
+    function updateTableInfo() {
+        const total = displayedStocks.length;
+        const start = Math.min((currentPage - 1) * CONFIG.stocksPerPage + 1, total);
+        const end = Math.min(currentPage * CONFIG.stocksPerPage, total);
+
+        document.getElementById('tableSubtitle').textContent =
+            `Showing ${start}-${end} of ${total.toLocaleString()} stocks`;
+
+        // Update table title based on filter
+        let title = 'All Stocks';
+        if (selectedSector !== 'all') title = `${selectedSector} Stocks`;
+        if (selectedMarketCap !== 'all') title = `${selectedMarketCap.charAt(0).toUpperCase() + selectedMarketCap.slice(1)} Cap Stocks`;
+        document.getElementById('tableTitle').textContent = title;
+
+        document.getElementById('searchResultsCount').textContent = total.toLocaleString();
+    }
+
+    // ==================== EVENT HANDLERS ====================
+    function setupEventListeners() {
+        document.getElementById('searchStocks').addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim();
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(() => {
+                currentPage = 1;
+                applyFiltersAndRender();
+            }, 300);
+        });
+
+        document.getElementById('sortBy').addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            applyFiltersAndRender();
+        });
+
+        document.getElementById('riskFilter').addEventListener('change', (e) => {
+            selectedRisk = e.target.value;
+            applyFiltersAndRender();
+        });
+
+        document.getElementById('performanceFilter').addEventListener('change', (e) => {
+            selectedPerformance = e.target.value;
+            applyFiltersAndRender();
+        });
+
+        document.getElementById('toggleSectors').addEventListener('click', function() {
+            const moreSectors = document.getElementById('moreSectors');
+            const isHidden = moreSectors.classList.contains('hidden');
+
+            if (isHidden) {
+                moreSectors.classList.remove('hidden');
+                this.innerHTML = '<i class="fas fa-chevron-up mr-1"></i> Show Less';
+            } else {
+                moreSectors.classList.add('hidden');
+                this.innerHTML = '<i class="fas fa-chevron-down mr-1"></i> Show All Sectors';
+            }
+        });
+
+        // Pagination
+        document.getElementById('prevPage').addEventListener('click', () => changePage(currentPage - 1));
+        document.getElementById('nextPage').addEventListener('click', () => changePage(currentPage + 1));
+    }
+
+    // ==================== FILTER FUNCTIONS ====================
+    window.filterBySector = function(sector) {
+        selectedSector = sector === 'all' ? 'all' : sector;
+
+        // Update UI
+        document.querySelectorAll('.sector-chip').forEach(chip => {
+            chip.classList.remove('active', 'bg-blue-600', 'text-white', 'border-blue-600');
+            chip.classList.add('border-gray-600', 'text-gray-400');
+
+            if (chip.textContent.includes(sector) || (sector === 'all' && chip.textContent.includes('All Sectors'))) {
+                chip.classList.add('active', 'bg-blue-600', 'text-white', 'border-blue-600');
+                chip.classList.remove('border-gray-600', 'text-gray-400');
+            }
+        });
+
+        currentPage = 1;
+        applyFiltersAndRender();
+    }
+
+    window.filterByMarketCap = function(capType) {
+        selectedMarketCap = capType;
+
+        document.querySelectorAll('.market-cap-chip').forEach(chip => {
+            chip.classList.remove('active');
+        });
+        document.getElementById(`marketCap${capType.charAt(0).toUpperCase() + capType.slice(1)}`).classList.add('active');
+
+        currentPage = 1;
+        applyFiltersAndRender();
+    }
+
+    // ==================== PAGINATION ====================
+    function updatePagination() {
+        const totalPages = Math.ceil(displayedStocks.length / CONFIG.stocksPerPage);
+        const pageNumbers = document.getElementById('pageNumbers');
+        const prevButton = document.getElementById('prevPage');
+        const nextButton = document.getElementById('nextPage');
+
+        prevButton.disabled = currentPage === 1;
+        nextButton.disabled = currentPage === totalPages;
+
+        pageNumbers.innerHTML = '';
+
+        const maxPagesToShow = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.className = `px-3 py-1 rounded-lg ${i === currentPage ? 'pagination-btn active' : 'bg-gray-800 hover:bg-gray-700'}`;
+            pageButton.textContent = i;
+            pageButton.onclick = () => changePage(i);
+            pageNumbers.appendChild(pageButton);
+        }
+
+        document.getElementById('paginationInfo').innerHTML = `
+            Page <span class="text-white font-semibold">${currentPage}</span> of
+            <span class="text-white font-semibold">${totalPages}</span> •
+            <span class="text-gray-400">${displayedStocks.length.toLocaleString()} stocks</span>
+        `;
+    }
+
+    window.changePage = function(page) {
+        const totalPages = Math.ceil(displayedStocks.length / CONFIG.stocksPerPage);
+        if (page >= 1 && page <= totalPages) {
+            currentPage = page;
+            renderStocksTable();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    // ==================== INITIALIZE FILTERS ====================
+    function initializeFilters() {
+        selectedRisk = document.getElementById('riskFilter').value;
+        selectedPerformance = document.getElementById('performanceFilter').value;
+        currentSort = document.getElementById('sortBy').value;
+
+        setupEventListeners();
+        applyFiltersAndRender();
+        updateSectorChips();
+    }
+
+    // ==================== ANALYZE FUNCTION ====================
+    window.analyzeStock = function(symbol) {
+        const stock = allStocksData.find(s => s.symbol === symbol);
+
+        if (!stock) {
+            alert('Stock data not found');
+            return;
+        }
+
+        // ✅ Save full stock object
+        sessionStorage.setItem('analyzingStock', JSON.stringify({
+            symbol: stock.symbol,
+            name: stock.name,
+            currentPrice: stock.price,
+            change: stock.change,
+            changePercent: stock.changePercent,
+            marketCap: stock.marketCap,
+            peRatio: (Math.random() * 30 + 5).toFixed(1),
+            recommendation: stock.recommendation,
+            riskLevel: {
+                text: stock.riskLevel.toUpperCase(),
+                class: stock.riskLevel === 'low'
+                    ? 'risk-low'
+                    : stock.riskLevel === 'medium'
+                        ? 'risk-medium'
+                        : 'risk-high'
+            }
+        }));
+
+        // ✅ Redirect to analyze page
+        window.location.href = 'analyze.html';
+    };
+
+
+    // ==================== AUTO REFRESH ====================
+    function startAutoRefresh() {
+        setInterval(async () => {
+            await loadMarketIndices();
+        }, 10000);
+
+        setInterval(() => {
+            if (!isLoading) {
+                updateLastUpdated();
+            }
+        }, 30000);
+    }
+
+    function updateMarketStatus() {
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
+        const isMarketOpen = (hours >= 9 && hours < 15) || (hours === 15 && minutes <= 30);
+
+        marketStatus = isMarketOpen ? 'OPEN' : 'CLOSED';
+        document.getElementById('marketStatus').textContent = marketStatus;
+        document.getElementById('marketStatus').className = marketStatus === 'OPEN'
+            ? 'text-lg font-bold text-green-400'
+            : 'text-lg font-bold text-red-400';
+    }
+
+    function updateLastUpdated() {
+        lastUpdateTime = new Date();
+        const timeString = lastUpdateTime.toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        document.getElementById('lastUpdated').innerHTML = `
+            <i class="fas fa-sync-alt mr-2"></i>${timeString}
+        `;
+        document.getElementById('lastUpdated').classList.remove('blink');
+
+        document.getElementById('dataFreshness').textContent = 'Just now';
+    }
+
+    console.log('🚀 Indian Stocks Dashboard with Sector Classification initialized');
+</script>
+</body>
+</html>

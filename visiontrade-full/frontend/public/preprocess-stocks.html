@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock Pre-Processor</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        textarea { width: 100%; height: 300px; }
+        button { padding: 10px 20px; margin: 10px; }
+        #output { white-space: pre-wrap; background: #f5f5f5; padding: 10px; }
+    </style>
+</head>
+<body>
+<h1>Stock Data Pre-Processor</h1>
+
+<h3>Step 1: Paste your INDIAN_STOCKS array (3500+ stocks)</h3>
+<textarea id="inputData" placeholder="Paste your complete INDIAN_STOCKS array here..."></textarea>
+
+<h3>Step 2: Process and Save</h3>
+<button onclick="processAndSave()">⚡ Process All Stocks Instantly</button>
+
+<h3>Step 3: Copy Output</h3>
+<div id="output">Output will appear here...</div>
+<button onclick="copyOutput()" id="copyBtn" disabled>📋 Copy to Clipboard</button>
+
+<script>
+    // ULTRA-FAST categorization
+    function categorizeStock(stock) {
+        const name = stock.name.toUpperCase();
+        if (!stock.symbol) {
+            return null; // skip bad data
+        }
+
+        const symbol = stock.symbol.toUpperCase();
+
+
+        // Banking
+        if (symbol.includes('BANK') || name.includes('BANK')) {
+            if (name.includes('HOUSING') || name.includes('FINANCE')) return 'Finance';
+            return 'Banking';
+        }
+
+        // IT
+        if (name.includes('SOFTWARE') || name.includes('TECH') ||
+            symbol === 'TCS' || symbol === 'INFY' || symbol === 'WIPRO' ||
+            symbol === 'HCLTECH' || symbol === 'TECHM') {
+            return 'IT';
+        }
+
+        // Pharma
+        if (name.includes('PHARMA') || name.includes('DRUG') ||
+            symbol.includes('PHARMA') || symbol === 'SUNPHARMA' ||
+            symbol === 'DRREDDY' || symbol === 'CIPLA') {
+            return 'Pharma';
+        }
+
+        // Finance
+        if (name.includes('FINANCE') || name.includes('FINANCIAL') ||
+            name.includes('CAPITAL') || symbol.includes('FIN')) {
+            return 'Finance';
+        }
+
+        // Automobile
+        if (name.includes('AUTO') || name.includes('MOTOR') ||
+            symbol.includes('MOTOR') || symbol === 'MARUTI' ||
+            symbol === 'TATAMOTORS' || symbol === 'M&M') {
+            return 'Automobile';
+        }
+
+        // Oil & Gas
+        if (name.includes('OIL') || name.includes('PETROL') ||
+            symbol === 'RELIANCE' || symbol === 'ONGC') {
+            return 'Oil & Gas';
+        }
+
+        // Energy
+        if (name.includes('POWER') || name.includes('ENERGY')) {
+            return 'Energy';
+        }
+
+        // Metals
+        if (name.includes('STEEL') || name.includes('METAL')) {
+            return 'Metals';
+        }
+
+        // Cement
+        if (name.includes('CEMENT')) {
+            return 'Cement';
+        }
+
+        // Insurance
+        if (name.includes('INSURANCE') || name.includes('ASSURANCE')) {
+            return 'Insurance';
+        }
+
+        return 'Other';
+    }
+
+    function processAndSave() {
+        const input = document.getElementById('inputData').value;
+
+        try {
+            // Extract array from input
+            const match = input.match(/const INDIAN_STOCKS = (\[.*?\])/s);
+            if (!match) throw new Error('Could not find INDIAN_STOCKS array');
+
+            const stocks = eval(match[1]);
+
+            // Process ALL stocks
+            const results = [];
+            const sectors = {};
+
+            const start = Date.now();
+
+            for (let i = 0; i < stocks.length; i++) {
+                const stock = stocks[i];
+                const sector = categorizeStock(stock);
+
+                results.push({
+                    symbol: stock.symbol,
+                    name: stock.name,
+                    sector: sector
+                });
+
+                // Count sectors
+                sectors[sector] = (sectors[sector] || 0) + 1;
+
+                // Update progress every 500 stocks
+                if (i % 500 === 0) {
+                    document.getElementById('output').innerHTML =
+                        `Processing... ${i} of ${stocks.length} stocks`;
+                }
+            }
+
+            const time = Date.now() - start;
+
+            // Create optimized output
+            const output = {
+                processed_at: new Date().toISOString(),
+                total_stocks: results.length,
+                processing_time_ms: time,
+                stocks: results,
+                sector_counts: sectors
+            };
+
+            // Save to localStorage
+            localStorage.setItem('stock_sectors_data', JSON.stringify(output));
+            localStorage.setItem('stock_sectors_timestamp', Date.now());
+
+            // Display summary
+            let summary = `✅ PROCESSED ${results.length} STOCKS IN ${time}ms\n\n`;
+            summary += `SECTOR DISTRIBUTION:\n`;
+            summary += `====================\n`;
+
+            Object.entries(sectors)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([sector, count]) => {
+                    const percent = ((count / results.length) * 100).toFixed(1);
+                    summary += `${sector}: ${count} stocks (${percent}%)\n`;
+                });
+
+            summary += `\n📊 FIRST 5 STOCKS:\n`;
+            results.slice(0, 5).forEach((stock, i) => {
+                summary += `${i+1}. ${stock.symbol} - ${stock.sector}\n`;
+            });
+
+            document.getElementById('output').textContent = summary;
+            document.getElementById('copyBtn').disabled = false;
+
+            // Also create downloadable file
+            const dataStr = JSON.stringify(output, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+            const link = document.createElement('a');
+            link.setAttribute('href', dataUri);
+            link.setAttribute('download', 'stock_sectors_preprocessed.json');
+            link.innerHTML = '📥 Download Preprocessed Data';
+            link.style.display = 'block';
+            link.style.marginTop = '20px';
+            link.style.padding = '10px';
+            link.style.background = '#4CAF50';
+            link.style.color = 'white';
+            link.style.textDecoration = 'none';
+            document.body.appendChild(link);
+
+        } catch (error) {
+            document.getElementById('output').textContent = 'Error: ' + error.message;
+        }
+    }
+
+    function copyOutput() {
+        const output = document.getElementById('output').textContent;
+        navigator.clipboard.writeText(output);
+        alert('Copied to clipboard!');
+    }
+</script>
+</body>
+</html>

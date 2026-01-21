@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Processing 3500+ Stocks...</h1>
+<div id="status">Loading...</div>
+
+<script>
+    // Load stocks-data.js directly
+    const script = document.createElement('script');
+    script.src = 'stocks-data.js';
+
+    script.onload = function() {
+        document.getElementById('status').innerHTML =
+            `Loaded ${INDIAN_STOCKS.length} stocks. Processing...`;
+
+        // Simple categorization function
+        function categorizeStock(stock) {
+            const name = stock.name.toUpperCase();
+            if (name.includes('BANK')) return 'Banking';
+            if (name.includes('PHARMA')) return 'Pharma';
+            if (name.includes('SOFTWARE') || name.includes('TECH')) return 'IT';
+            if (name.includes('FINANCE')) return 'Finance';
+            if (name.includes('AUTO') || name.includes('MOTOR')) return 'Automobile';
+            if (name.includes('OIL')) return 'Oil & Gas';
+            if (name.includes('POWER')) return 'Energy';
+            if (name.includes('STEEL')) return 'Metals';
+            if (name.includes('CEMENT')) return 'Cement';
+            if (name.includes('INSURANCE')) return 'Insurance';
+            return 'Other';
+        }
+
+        // Process all stocks
+        const results = INDIAN_STOCKS.map(stock => ({
+            symbol: stock.symbol,
+            name: stock.name,
+            sector: categorizeStock(stock)
+        }));
+
+        // Create output
+        const output = {
+            processed_at: new Date().toISOString(),
+            total_stocks: results.length,
+            stocks: results
+        };
+
+        // Download JSON file
+        const dataStr = JSON.stringify(output, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'stock_sectors_preprocessed.json';
+        document.body.appendChild(a);
+        a.click();
+
+        document.getElementById('status').innerHTML =
+            `✅ Processed ${results.length} stocks! File downloaded.`;
+    };
+
+    script.onerror = function() {
+        document.getElementById('status').innerHTML =
+            'Error loading stocks-data.js. Make sure it is in the same folder.';
+    };
+
+    document.head.appendChild(script);
+</script>
+</body>
+</html>

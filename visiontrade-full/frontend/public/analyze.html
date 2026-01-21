@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Analysis | StockSense AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-screen bg-gray-900 text-gray-200">
+<div class="container mx-auto px-4 py-8">
+    <a href="main-dashboard.html" class="inline-flex items-center text-blue-400 hover:text-blue-300 mb-6">
+        <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+    </a>
+
+    <!-- Stock Header -->
+    <div id="stockHeader" class="mb-8">
+        <div class="text-center">
+            <h1 id="stockName" class="text-4xl font-bold text-white mb-2">Loading...</h1>
+            <div id="stockSymbol" class="text-2xl text-gray-400 mb-4">--</div>
+            <div id="stockPrice" class="text-5xl font-bold text-white mb-4">--</div>
+            <div id="stockChange" class="text-xl">--</div>
+        </div>
+    </div>
+
+    <!-- Timeframe Selector -->
+    <div class="flex justify-center space-x-4 mb-8">
+        <button onclick="loadChartData('1d')" class="timeframe-btn px-4 py-2 bg-blue-600 text-white rounded-lg">1D</button>
+        <button onclick="loadChartData('6m')" class="timeframe-btn px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700">6M</button>
+        <button onclick="loadChartData('1y')" class="timeframe-btn px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700">1Y</button>
+        <button onclick="loadChartData('5y')" class="timeframe-btn px-4 py-2 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700">5Y</button>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="bg-gray-800 rounded-xl p-6 mb-8">
+        <canvas id="stockChart" height="400"></canvas>
+    </div>
+
+    <!-- Stock Metrics Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Fundamental Metrics -->
+        <div class="bg-gray-800 rounded-xl p-6">
+            <h3 class="text-xl font-bold text-white mb-4">Fundamental Metrics</h3>
+            <div class="space-y-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">P/E Ratio</span>
+                    <span id="peRatio" class="text-white font-semibold">--</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Market Cap</span>
+                    <span id="marketCap" class="text-white font-semibold">--</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Dividend Yield</span>
+                    <span id="dividendYield" class="text-white font-semibold">--</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">EPS</span>
+                    <span id="eps" class="text-white font-semibold">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk & Recommendation -->
+        <div class="bg-gray-800 rounded-xl p-6">
+            <h3 class="text-xl font-bold text-white mb-4">Risk & Recommendation</h3>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-400">Risk Level</span>
+                    <span id="riskLevel" class="risk-low px-3 py-1 rounded-full text-sm font-medium">--</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-400">Recommendation</span>
+                    <span id="recommendation" class="text-green-400 font-semibold">--</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Volatility</span>
+                    <span id="volatility" class="text-white font-semibold">--</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Beta</span>
+                    <span id="beta" class="text-white font-semibold">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance -->
+        <div class="bg-gray-800 rounded-xl p-6">
+            <h3 class="text-xl font-bold text-white mb-4">Performance</h3>
+            <div class="space-y-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Day High</span>
+                    <span id="dayHigh" class="text-white font-semibold">--</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">Day Low</span>
+                    <span id="dayLow" class="text-white font-semibold">--</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">52W High</span>
+                    <span id="week52High" class="text-white font-semibold">--</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-400">52W Low</span>
+                    <span id="week52Low" class="text-white font-semibold">--</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Action Buttons -->
+    <div class="flex justify-center space-x-4">
+        <button class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold">
+            <i class="fas fa-shopping-cart mr-2"></i>Buy Now
+        </button>
+        <button class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold">
+            <i class="fas fa-sign-out-alt mr-2"></i>Sell Now
+        </button>
+        <button class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold">
+            <i class="fas fa-bell mr-2"></i>Set Alert
+        </button>
+    </div>
+</div>
+
+<script>
+    let stockChart = null;
+    let currentStock = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Get stock from sessionStorage or URL
+        const stockData = sessionStorage.getItem('analyzingStock');
+        const urlParams = new URLSearchParams(window.location.search);
+        const symbol = urlParams.get('symbol');
+
+        if (stockData) {
+            currentStock = JSON.parse(stockData);
+            displayStockInfo();
+            loadChartData('1d');
+            setActiveTimeframe('1d');
+        } else if (symbol) {
+            await loadStockFromAPI(symbol);
+        }
+    });
+
+    function displayStockInfo() {
+        if (!currentStock) return;
+
+        document.getElementById('stockName').textContent = currentStock.name;
+        document.getElementById('stockSymbol').textContent = currentStock.symbol;
+        document.getElementById('stockPrice').textContent = `₹${currentStock.currentPrice.toFixed(2)}`;
+
+        const changeText = `${currentStock.change >= 0 ? '+' : ''}${currentStock.change.toFixed(2)} (${currentStock.changePercent.toFixed(2)}%)`;
+        document.getElementById('stockChange').textContent = changeText;
+        document.getElementById('stockChange').className = `text-xl ${currentStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`;
+
+        // Update metrics
+        document.getElementById('peRatio').textContent = currentStock.peRatio;
+        document.getElementById('marketCap').textContent = formatMarketCap(currentStock.marketCap);
+        const result = calculateRecommendation(currentStock);
+
+        document.getElementById('recommendation').className = currentStock.recommendation.class;
+
+        const riskElement = document.getElementById('riskLevel');
+        riskElement.textContent = currentStock.riskLevel.text;
+        riskElement.className = `${currentStock.riskLevel.class} px-3 py-1 rounded-full text-sm font-medium`;
+
+        // Generate additional metrics
+        document.getElementById('dividendYield').textContent = (Math.random() * 3 + 0.5).toFixed(2) + '%';
+        document.getElementById('eps').textContent = (currentStock.currentPrice / currentStock.peRatio).toFixed(2);
+        document.getElementById('volatility').textContent = (Math.random() * 30 + 10).toFixed(1) + '%';
+        document.getElementById('beta').textContent = (Math.random() * 1.5 + 0.5).toFixed(2);
+
+        const high = currentStock.currentPrice * (1 + Math.random() * 0.02);
+        const low = currentStock.currentPrice * (1 - Math.random() * 0.02);
+        document.getElementById('dayHigh').textContent = `₹${high.toFixed(2)}`;
+        document.getElementById('dayLow').textContent = `₹${low.toFixed(2)}`;
+
+        const week52High = currentStock.currentPrice * (1 + Math.random() * 0.15);
+        const week52Low = currentStock.currentPrice * (1 - Math.random() * 0.2);
+        document.getElementById('week52High').textContent = `₹${week52High.toFixed(2)}`;
+        document.getElementById('week52Low').textContent = `₹${week52Low.toFixed(2)}`;
+    }
+
+    function calculateRecommendation(stock) {
+        let score = 0;
+        const reasons = [];
+
+        // Valuation
+        if (stock.peRatio && stock.peRatio < 18) {
+            score += 2;
+            reasons.push('Stock appears undervalued based on P/E ratio');
+        } else if (stock.peRatio && stock.peRatio > 30) {
+            score -= 2;
+            reasons.push('Stock looks overvalued based on P/E ratio');
+        } else {
+            reasons.push('Stock valuation is fairly priced');
+        }
+
+        // Momentum
+        if (stock.changePercent > 1) {
+            score += 2;
+            reasons.push('Strong positive price momentum');
+        } else if (stock.changePercent < -1) {
+            score -= 2;
+            reasons.push('Recent price weakness observed');
+        } else {
+            reasons.push('Price movement is largely sideways');
+        }
+
+        // Risk / Volatility
+        if (stock.volatility > 30) {
+            score -= 1;
+            reasons.push('High volatility increases risk');
+        } else if (stock.volatility < 20) {
+            score += 1;
+            reasons.push('Low volatility indicates price stability');
+        }
+
+        // Final decision
+        let recommendation;
+        if (score >= 3) recommendation = 'BUY';
+        else if (score <= -2) recommendation = 'SELL';
+        else recommendation = 'HOLD';
+
+        return { recommendation, reasons };
+    }
+
+    async function loadChartData(timeframe) {
+        setActiveTimeframe(timeframe);
+
+        try {
+            const res = await fetch(
+                `/api/history?symbol=${currentStock.symbol}&period=${timeframe}`
+            );
+
+            const prices = await res.json();
+
+            if (!Array.isArray(prices) || prices.length === 0) {
+                throw new Error('No chart data');
+            }
+
+            const labels = prices.map(p =>
+                new Date(p.time).toLocaleDateString('en-IN', {
+                    year: timeframe === '5y' ? 'numeric' : undefined,
+                    month: 'short',
+                    day: timeframe === '1d' ? '2-digit' : undefined
+                })
+            );
+
+            const data = prices.map(p => p.close);
+
+            renderChart(labels, data, timeframe);
+
+        } catch (err) {
+            console.error('Chart load failed', err);
+            alert('Unable to load chart data');
+        }
+    }
+
+    function renderChart(labels, data, timeframe) {
+        const ctx = document.getElementById('stockChart').getContext('2d');
+
+        if (stockChart) {
+            stockChart.destroy();
+        }
+
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.2)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+        stockChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Price',
+                    data: data,
+                    borderColor: '#3b82f6',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                        titleColor: '#f1f5f9',
+                        bodyColor: '#cbd5e1',
+                        borderColor: '#1e293b',
+                        borderWidth: 1,
+                        callbacks: {
+                            label: function(context) {
+                                return `Price: ₹${context.parsed.y.toFixed(2)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: {
+                            color: '#94a3b8',
+                            callback: function(value) {
+                                return '₹' + value.toLocaleString('en-IN');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function setActiveTimeframe(timeframe) {
+        document.querySelectorAll('.timeframe-btn').forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'text-white');
+            btn.classList.add('bg-gray-800', 'text-gray-300');
+        });
+
+        const activeBtn = document.querySelector(`button[onclick="loadChartData('${timeframe}')"]`);
+        if (activeBtn) {
+            activeBtn.classList.remove('bg-gray-800', 'text-gray-300');
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+        }
+    }
+
+    async function loadStockFromAPI(symbol) {
+        try {
+            const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}.NS?interval=1d&range=1d`);
+            const data = await response.json();
+
+            const result = data.chart.result[0];
+            const meta = result.meta;
+
+            currentStock = {
+                symbol: symbol,
+                name: meta.symbol,
+                currentPrice: meta.regularMarketPrice,
+                previousClose: meta.chartPreviousClose,
+                change: meta.regularMarketPrice - meta.chartPreviousClose,
+                changePercent: ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose) * 100
+            };
+
+            displayStockInfo();
+            loadChartData('1d');
+
+        } catch (error) {
+            console.error('Error loading stock:', error);
+            alert('Failed to load stock data. Please try again.');
+        }
+    }
+
+    function formatMarketCap(value) {
+        if (value >= 100000) return '₹' + (value / 100000).toFixed(2) + 'L Cr';
+        if (value >= 1000) return '₹' + (value / 1000).toFixed(2) + 'K Cr';
+        return '₹' + value.toFixed(2) + ' Cr';
+    }
+
+
+</script>
+</body>
+</html>

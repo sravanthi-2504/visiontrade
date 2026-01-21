@@ -1,0 +1,29 @@
+.card {
+    background: #1f2937;
+    padding: 16px;
+    border-radius: 12px;
+}
+
+.label {
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+.value {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.time-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: #1f2937;
+    border: 1px solid #374151;
+    font-size: 14px;
+}
+
+.time-btn:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
