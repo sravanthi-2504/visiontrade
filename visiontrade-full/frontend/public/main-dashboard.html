@@ -1,654 +1,545 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indian Stocks Dashboard | 3500+ Stocks with Sector Classification</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Vision Trade | Indian Stocks Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
-        :root {
-            --primary: #3b82f6;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #8b5cf6;
-        }
+        :root{--bg:#080c14;--bg2:#0d1320;--card:#111827;--border:#1e2d45;--border2:#253552;--accent:#3b82f6;--accent2:#6366f1;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--txt1:#f1f5f9;--txt2:#94a3b8;--txt3:#475569}
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--txt1);min-height:100vh;overflow-x:hidden;padding-bottom:56px}
+        body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+        nav{position:sticky;top:0;z-index:100;background:rgba(8,12,20,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:60px}
+        .nav-logo{display:flex;align-items:center;gap:10px}
+        .nav-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:14px;color:#fff}
+        .nav-logo h1{font-size:18px;font-weight:700}.nav-logo h1 span{color:var(--accent)}
+        .nav-right{display:flex;align-items:center;gap:14px}
+        .live-badge{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--green)}
+        .ldot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+        .nav-link{color:var(--txt2);text-decoration:none;font-size:13px;font-weight:500;padding:6px 13px;border-radius:8px;transition:all .2s;display:flex;align-items:center;gap:6px}
+        .nav-link:hover{background:rgba(255,255,255,.06);color:var(--txt1)}
+        .mkt-tag{font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px}
+        .mkt-open{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:var(--green)}
+        .mkt-closed{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:var(--red)}
+        .main{max-width:1440px;margin:0 auto;padding:24px;position:relative;z-index:1}
+        .page-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+        .page-hdr h2{font-size:24px;font-weight:700;letter-spacing:-.4px}
+        .page-hdr p{font-size:13px;color:var(--txt3);margin-top:3px}
+        .hdr-meta{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 18px}
+        .hm-item{text-align:right}
+        .hm-label{font-size:11px;color:var(--txt3);margin-bottom:3px}
+        .hm-val{font-size:14px;font-weight:700}
+        .hdiv{width:1px;height:30px;background:var(--border)}
 
-        body {
-            background-color: #0f172a;
-            color: #e2e8f0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
+        /* SUMMARY */
+        .sum-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+        .sum-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;transition:border-color .25s}
+        .sum-card:hover{border-color:var(--border2)}
+        .sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+        .sm-lbl{font-size:11px;font-weight:700;letter-spacing:.6px;color:var(--txt3);text-transform:uppercase;margin-bottom:7px}
+        .sm-val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;margin-bottom:2px}
+        .sm-sub{font-size:12px;color:var(--txt3)}
+        .sm-ico{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:26px;opacity:.06}
 
-        .sector-chip, .market-cap-chip {
-            transition: all 0.3s ease;
-            cursor: pointer;
-            user-select: none;
-        }
+        /* CAP ROW */
+        .cap-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+        .cap-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 15px;cursor:pointer;transition:all .2s}
+        .cap-card:hover,.cap-card.active{border-color:var(--accent);background:rgba(59,130,246,.05)}
+        .cap-name{font-size:12px;font-weight:700;color:var(--txt3);margin-bottom:4px}
+        .cap-count{font-size:20px;font-weight:700;font-family:'DM Mono',monospace}
 
-        .sector-chip.active, .market-cap-chip.active {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
+        /* SECTOR PILLS */
+        .sect-wrap{margin-bottom:16px}
+        .sect-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px;font-weight:600}
+        .toggle-btn{font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;padding:3px 8px;border-radius:6px;transition:background .2s}
+        .toggle-btn:hover{background:rgba(59,130,246,.1)}
+        .pills{display:flex;flex-wrap:wrap;gap:7px}
+        .pill{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);background:rgba(255,255,255,.03);color:var(--txt2);cursor:pointer;transition:all .2s;white-space:nowrap}
+        .pill:hover{border-color:var(--accent);color:var(--txt1)}
+        .pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+        .pill-cnt{display:inline-block;background:rgba(0,0,0,.3);border-radius:10px;padding:0 5px;margin-left:3px;font-size:10px}
 
-        .stock-row:hover {
-            background-color: rgba(59, 130, 246, 0.08);
-            transform: translateY(-1px);
-        }
+        /* FILTERS */
+        .filter-bar{display:flex;gap:10px;margin-bottom:14px}
+        .srch-wrap{flex:1;position:relative}
+        .srch-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--txt3);font-size:13px}
+        .srch-wrap input{width:100%;padding:10px 13px 10px 38px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--txt1);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none;transition:border-color .2s}
+        .srch-wrap input:focus{border-color:var(--accent)}
+        .srch-wrap input::placeholder{color:var(--txt3)}
+        .srch-cnt{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--txt3);font-family:'DM Mono',monospace}
+        select{background:var(--card);border:1px solid var(--border);color:var(--txt1);padding:9px 13px;border-radius:10px;font-size:12px;font-family:'Space Grotesk',sans-serif;outline:none;cursor:pointer;transition:border-color .2s}
+        select:focus{border-color:var(--accent)}
 
-        .positive-change {
-            color: #10b981;
-            background-color: rgba(16, 185, 129, 0.1);
-            border-radius: 4px;
-            padding: 2px 8px;
-            font-weight: 600;
-        }
+        /* TABLE */
+        .tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px}
+        .tbl-hdr-bar{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid var(--border);background:rgba(13,19,32,.5)}
+        .tbl-title{font-size:14px;font-weight:700}
+        .tbl-sub{font-size:12px;color:var(--txt3);margin-top:2px}
+        .tbl-actions{display:flex;align-items:center;gap:8px}
+        .btn-sm{padding:5px 13px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--txt2);cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif;display:flex;align-items:center;gap:5px}
+        .btn-sm:hover{border-color:var(--accent);color:var(--txt1)}
+        .tbl-scroll{overflow-x:auto;max-height:600px;overflow-y:auto}
+        .tbl-scroll::-webkit-scrollbar{width:4px;height:4px}
+        .tbl-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+        table{width:100%;border-collapse:collapse}
+        th{padding:11px 16px;text-align:left;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--txt3);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;background:rgba(13,19,32,.95);cursor:pointer;user-select:none;white-space:nowrap}
+        th:hover{color:var(--txt1)}
+        td{padding:12px 16px;border-bottom:1px solid rgba(30,45,69,.4);font-size:13px;white-space:nowrap}
+        tbody tr{transition:background .15s;cursor:pointer}
+        tbody tr:hover td{background:rgba(59,130,246,.04)}
+        tbody tr:last-child td{border-bottom:none}
+        .sym-cell{display:flex;align-items:center;gap:10px}
+        .sym-ico-sm{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+        .sym-bold{font-size:13px;font-weight:700}
+        .sym-name{font-size:11px;color:var(--txt3);max-width:170px;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+        .live-dot-sm{width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite;margin-left:4px;vertical-align:middle}
+        .sect-pill{display:inline-block;padding:3px 9px;border-radius:12px;font-size:10px;font-weight:700;border:1px solid}
+        .cap-badge{display:inline-block;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace}
+        .bl{color:#3b82f6;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2)}
+        .bm{color:#10b981;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2)}
+        .bs{color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2)}
+        .bx{color:#8b5cf6;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2)}
+        .rec{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700}
+        .rsb{color:#10b981;background:rgba(16,185,129,.12)}.rb{color:#22c55e;background:rgba(34,197,94,.1)}.rh{color:#f59e0b;background:rgba(245,158,11,.1)}.rs{color:#ef4444;background:rgba(239,68,68,.1)}.rss{color:#dc2626;background:rgba(220,38,38,.12)}
+        .risk-lbl{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+        .rlow{color:#10b981;background:rgba(16,185,129,.1)}.rmed{color:#f59e0b;background:rgba(245,158,11,.1)}.rhigh{color:#ef4444;background:rgba(239,68,68,.1)}
+        .price-cell{font-family:'DM Mono',monospace;font-weight:700;font-size:13px}
+        .chg-cell{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;display:inline-block}
+        .pos-bg{color:var(--green);background:rgba(16,185,129,.1)}.neg-bg{color:var(--red);background:rgba(239,68,68,.1)}
+        .pos{color:var(--green)}.neg{color:var(--red)}
+        .analyze-btn{padding:5px 12px;border-radius:7px;border:1px solid rgba(59,130,246,.3);background:rgba(59,130,246,.08);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;transition:all .2s;display:flex;align-items:center;gap:4px;white-space:nowrap}
+        .analyze-btn:hover{background:rgba(59,130,246,.2);border-color:var(--accent)}
 
-        .negative-change {
-            color: #ef4444;
-            background-color: rgba(239, 68, 68, 0.1);
-            border-radius: 4px;
-            padding: 2px 8px;
-            font-weight: 600;
-        }
+        /* LOADING */
+        .loading-state{padding:50px;text-align:center;color:var(--txt3)}
+        .loading-state i{font-size:28px;margin-bottom:12px;display:block;color:var(--accent)}
+        .spin{animation:spin .8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .empty-state{padding:50px;text-align:center;color:var(--txt3);display:none}
+        .skel{background:linear-gradient(90deg,#1e293b 25%,#263045 50%,#1e293b 75%);background-size:200% 100%;animation:sk 1.4s infinite;border-radius:4px}
+        @keyframes sk{0%{background-position:200%}100%{background-position:-200%}}
 
-        .risk-low {
-            color: #10b981;
-            background-color: rgba(16, 185, 129, 0.1);
-            border-radius: 9999px;
-            padding: 2px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+        /* PAG */
+        .pag-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .pag-info{font-size:12px;color:var(--txt3)}
+        .pag-btns{display:flex;gap:5px}
+        .pb{padding:6px 11px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--txt2);cursor:pointer;font-size:12px;transition:all .2s;font-family:'DM Mono',monospace}
+        .pb:hover:not(:disabled){border-color:var(--accent);color:var(--txt1)}.pb:disabled{opacity:.3;cursor:default}.pb.active{background:var(--accent);border-color:var(--accent);color:#fff}
 
-        .risk-medium {
-            color: #f59e0b;
-            background-color: rgba(245, 158, 11, 0.1);
-            border-radius: 9999px;
-            padding: 2px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+        /* ERR */
+        .err-bar{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--red);display:none;align-items:center;gap:10px}
+        .err-bar.show{display:flex}
 
-        .risk-high {
-            color: #ef4444;
-            background-color: rgba(239, 68, 68, 0.1);
-            border-radius: 9999px;
-            padding: 2px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+        /* STATUS BAR */
+        .status-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(8,12,20,.95);border-top:1px solid var(--border);padding:8px 24px;display:flex;justify-content:space-between;align-items:center;font-size:12px}
+        .sb-left{display:flex;align-items:center;gap:16px;color:var(--txt3)}
+        .sb-right{color:var(--txt3);font-family:'DM Mono',monospace}
 
-        .recommendation-strong-buy {
-            color: #10b981;
-            font-weight: 700;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-        .recommendation-buy {
-            color: #22c55e;
-            font-weight: 700;
-            background: rgba(34, 197, 94, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-        .recommendation-hold {
-            color: #f59e0b;
-            font-weight: 700;
-            background: rgba(245, 158, 11, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-        .recommendation-sell {
-            color: #ef4444;
-            font-weight: 700;
-            background: rgba(239, 68, 68, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-        .recommendation-strong-sell {
-            color: #dc2626;
-            font-weight: 700;
-            background: rgba(220, 38, 38, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-
-        .dark-table {
-            background-color: #1e293b;
-        }
-
-        .dark-table th {
-            background-color: #1e293b;
-            border-color: #334155;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .dark-table td {
-            border-color: #334155;
-        }
-
-        .pagination-btn.active {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .blink {
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        /* Loading skeleton */
-        .skeleton {
-            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-            border-radius: 4px;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* Live price animation */
-        .price-update {
-            animation: priceUpdate 0.5s ease-out;
-        }
-
-        @keyframes priceUpdate {
-            0% { background-color: rgba(16, 185, 129, 0.3); }
-            100% { background-color: transparent; }
-        }
-
-        /* Market cap colors */
-        .large-cap {
-            color: #3b82f6;
-            background: rgba(59, 130, 246, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .mid-cap {
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .small-cap {
-            color: #f59e0b;
-            background: rgba(245, 158, 11, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .micro-cap {
-            color: #8b5cf6;
-            background: rgba(139, 92, 246, 0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        /* Custom scrollbar */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1e293b;
-            border-radius: 3px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 3px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
-        }
-
-        /* Sector colors - Static classes for Tailwind */
-        .sector-banking { background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; }
-        .sector-finance { background: rgba(16, 185, 129, 0.2); border-color: #10b981; }
-        .sector-it { background: rgba(139, 92, 246, 0.2); border-color: #8b5cf6; }
-        .sector-automobile { background: rgba(239, 68, 68, 0.2); border-color: #ef4444; }
-        .sector-pharma { background: rgba(34, 197, 94, 0.2); border-color: #22c55e; }
-        .sector-fmcg { background: rgba(245, 158, 11, 0.2); border-color: #f59e0b; }
-        .sector-energy { background: rgba(20, 184, 166, 0.2); border-color: #14b8a6; }
-        .sector-metals { background: rgba(249, 115, 22, 0.2); border-color: #f97316; }
-        .sector-infrastructure { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; }
-        .sector-telecom { background: rgba(236, 72, 153, 0.2); border-color: #ec4899; }
-        .sector-real-estate { background: rgba(244, 63, 94, 0.2); border-color: #f43f5e; }
-        .sector-healthcare { background: rgba(6, 182, 212, 0.2); border-color: #06b6d4; }
-        .sector-chemicals { background: rgba(139, 92, 246, 0.2); border-color: #8b5cf6; }
-        .sector-consumer-goods { background: rgba(217, 70, 239, 0.2); border-color: #d946ef; }
-        .sector-oil-gas { background: rgba(6, 182, 212, 0.2); border-color: #06b6d4; }
-        .sector-cement { background: rgba(148, 163, 184, 0.2); border-color: #94a3b8; }
-        .sector-textiles { background: rgba(251, 191, 36, 0.2); border-color: #fbbf24; }
-        .sector-media { background: rgba(244, 114, 182, 0.2); border-color: #f472b6; }
-        .sector-agriculture { background: rgba(101, 163, 13, 0.2); border-color: #65a30d; }
-        .sector-aviation { background: rgba(2, 132, 199, 0.2); border-color: #0284c7; }
-        .sector-retail { background: rgba(192, 38, 211, 0.2); border-color: #c026d3; }
-        .sector-insurance { background: rgba(5, 150, 105, 0.2); border-color: #059669; }
-        .sector-logistics { background: rgba(124, 58, 237, 0.2); border-color: #7c3aed; }
-        .sector-power { background: rgba(234, 88, 12, 0.2); border-color: #ea580c; }
-        .sector-defence { background: rgba(220, 38, 38, 0.2); border-color: #dc2626; }
-        .sector-railway { background: rgba(2, 132, 199, 0.2); border-color: #0284c7; }
-        .sector-psu { background: rgba(30, 64, 175, 0.2); border-color: #1e40af; }
-        .sector-other { background: rgba(100, 116, 139, 0.2); border-color: #64748b; }
-
-        /* Prediction loader */
-        .predict-loader {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @media(max-width:1100px){.sum-grid,.cap-row{grid-template-columns:1fr 1fr}}
+        @media(max-width:700px){.sum-grid,.cap-row{grid-template-columns:1fr}.filter-bar{flex-direction:column}}
     </style>
 </head>
-<body class="min-h-screen bg-gray-900 text-gray-200">
-<!-- Navigation -->
-<nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
-    <div class="container mx-auto px-4 py-3">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="relative">
-                    <i class="fas fa-chart-line text-blue-400 text-2xl"></i>
-                    <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-white">Indian Stocks Dashboard</h1>
-                    <p class="text-sm text-gray-400">3500+ Stocks with AI Predictions</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-6">
-                <div class="hidden md:flex items-center space-x-4">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                        <span class="text-green-400 font-semibold" id="connectionStatus">LIVE</span>
-                    </div>
-                    <div class="text-sm text-gray-400">
-                        <span id="liveStocksCount">0</span> stocks live
-                    </div>
-                </div>
-                <a href="index.html" class="text-gray-300 hover:text-white flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-                    <i class="fas fa-home mr-2"></i>Home
-                </a>
-            </div>
-        </div>
+<body>
+<nav>
+    <div class="nav-logo">
+        <div class="nav-mark"><i class="fas fa-chart-line"></i></div>
+        <h1>VISION <span>TRADE</span></h1>
+    </div>
+    <div class="nav-right">
+        <div class="live-badge"><div class="ldot"></div><span id="liveCount">0</span> live</div>
+        <span class="mkt-tag" id="mktTag">—</span>
+        <a href="index.html" class="nav-link"><i class="fas fa-home"></i>Home</a>
     </div>
 </nav>
 
-<!-- Main Dashboard -->
-<div class="container mx-auto px-4 py-6">
-    <!-- Header -->
-    <div class="mb-8">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-                <h2 class="text-3xl font-bold text-white mb-2">Complete Indian Stocks Universe</h2>
-                <p class="text-gray-400">3500+ stocks with LSTM & Linear Regression predictions</p>
-            </div>
-            <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                <div class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <div class="text-sm text-gray-400">Last Update</div>
-                        <div id="lastUpdated" class="text-lg font-semibold text-green-400 blink">
-                            <i class="fas fa-sync-alt mr-2"></i>Loading...
-                        </div>
-                    </div>
-                    <div class="h-8 w-px bg-gray-700"></div>
-                    <div class="text-right">
-                        <div class="text-sm text-gray-400">Market</div>
-                        <div id="marketStatus" class="text-lg font-bold">--</div>
-                    </div>
-                </div>
-            </div>
+<div class="main">
+    <div class="page-hdr">
+        <div>
+            <h2>Indian Stocks Universe</h2>
+            <p>Real prices via Flask backend (yfinance) · 3,500+ stocks across 25+ sectors</p>
+        </div>
+        <div class="hdr-meta">
+            <div class="hm-item"><div class="hm-label">Last Update</div><div class="hm-val pos" id="lastUpdate" style="color:var(--green)">Loading…</div></div>
+            <div class="hdiv"></div>
+            <div class="hm-item"><div class="hm-label">Market</div><div class="hm-val" id="mktStat">—</div></div>
+            <div class="hdiv"></div>
+            <div class="hm-item"><div class="hm-label">Live Prices</div><div class="hm-val" id="livePriceCnt" style="color:var(--green)">0 / 0</div></div>
         </div>
     </div>
 
-    <!-- Market Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-5 border border-gray-700 hover:border-blue-500 transition-colors">
-            <div class="flex justify-between items-start">
-                <div>
-                    <div class="text-gray-400 text-sm mb-1">NIFTY 50</div>
-                    <div id="niftyValue" class="text-2xl font-bold text-white">--</div>
-                    <div id="niftyChange" class="text-sm mt-1">--</div>
-                </div>
-                <div class="text-blue-400">
-                    <i class="fas fa-chart-line text-xl"></i>
-                </div>
-            </div>
-            <div class="text-xs text-gray-500 mt-3" id="niftyStatus">Connecting to NSE...</div>
-        </div>
-
-        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-5 border border-gray-700 hover:border-green-500 transition-colors">
-            <div class="flex justify-between items-start">
-                <div>
-                    <div class="text-gray-400 text-sm mb-1">SENSEX</div>
-                    <div id="sensexValue" class="text-2xl font-bold text-white">--</div>
-                    <div id="sensexChange" class="text-sm mt-1">--</div>
-                </div>
-                <div class="text-green-400">
-                    <i class="fas fa-chart-bar text-xl"></i>
-                </div>
-            </div>
-            <div class="text-xs text-gray-500 mt-3" id="sensexStatus">Connecting to BSE...</div>
-        </div>
-
-        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-5 border border-gray-700 hover:border-purple-500 transition-colors">
-            <div class="flex justify-between items-start">
-                <div>
-                    <div class="text-gray-400 text-sm mb-1">Total Stocks</div>
-                    <div id="totalStocks" class="text-2xl font-bold text-white">3,500+</div>
-                    <div class="text-sm text-gray-400 mt-1">25+ Sectors</div>
-                </div>
-                <div class="text-purple-400">
-                    <i class="fas fa-layer-group text-xl"></i>
-                </div>
-            </div>
-            <div class="text-xs text-gray-500 mt-3" id="sectorCount">Loading sectors...</div>
-        </div>
-
-        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-5 border border-gray-700 hover:border-yellow-500 transition-colors">
-            <div class="flex justify-between items-start">
-                <div>
-                    <div class="text-gray-400 text-sm mb-1">AI Models</div>
-                    <div id="sectorsCount" class="text-2xl font-bold text-white">2</div>
-                    <div class="text-sm text-gray-400 mt-1">LSTM + Linear Regression</div>
-                </div>
-                <div class="text-yellow-400">
-                    <i class="fas fa-brain text-xl"></i>
-                </div>
-            </div>
-            <div class="text-xs text-gray-500 mt-3">AI-powered predictions</div>
-        </div>
+    <!-- ERROR -->
+    <div class="err-bar" id="errBar">
+        <i class="fas fa-exclamation-triangle" style="flex-shrink:0"></i>
+        <span>Backend offline. Run: <code style="background:rgba(0,0,0,.4);padding:1px 7px;border-radius:4px;font-size:11px">pip install flask flask-cors yfinance pytz &amp;&amp; python app.py</code></span>
     </div>
 
-    <!-- Market Cap Distribution -->
-    <div class="mb-8">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-white">Market Capitalization</h3>
-            <div class="text-sm text-gray-400" id="capDistribution">Loading...</div>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="market-cap-chip p-4 rounded-xl border border-blue-600 bg-blue-900/20 active"
-                 onclick="filterByMarketCap('all')" id="marketCapAll">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="text-blue-400 font-semibold">ALL STOCKS</div>
-                        <div class="text-2xl font-bold text-white mt-1" id="capCountAll">3,500+</div>
-                    </div>
-                    <i class="fas fa-layer-group text-blue-400 text-xl"></i>
-                </div>
-            </div>
-
-            <div class="market-cap-chip p-4 rounded-xl border border-blue-600/30 text-blue-400 hover:border-blue-600 hover:bg-blue-900/20"
-                 onclick="filterByMarketCap('large')" id="marketCapLarge">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="font-semibold">LARGE CAP</div>
-                        <div class="text-2xl font-bold text-white mt-1" id="capCountLarge">100+</div>
-                    </div>
-                    <i class="fas fa-building text-blue-400/70 text-xl"></i>
-                </div>
-            </div>
-
-            <div class="market-cap-chip p-4 rounded-xl border border-green-600/30 text-green-400 hover:border-green-600 hover:bg-green-900/20"
-                 onclick="filterByMarketCap('mid')" id="marketCapMid">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="font-semibold">MID CAP</div>
-                        <div class="text-2xl font-bold text-white mt-1" id="capCountMid">150+</div>
-                    </div>
-                    <i class="fas fa-chart-line text-green-400/70 text-xl"></i>
-                </div>
-            </div>
-
-            <div class="market-cap-chip p-4 rounded-xl border border-yellow-600/30 text-yellow-400 hover:border-yellow-600 hover:bg-yellow-900/20"
-                 onclick="filterByMarketCap('small')" id="marketCapSmall">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <div class="font-semibold">SMALL CAP</div>
-                        <div class="text-2xl font-bold text-white mt-1" id="capCountSmall">3,000+</div>
-                    </div>
-                    <i class="fas fa-chart-bar text-yellow-400/70 text-xl"></i>
-                </div>
-            </div>
-        </div>
+    <!-- SUMMARY CARDS -->
+    <div class="sum-grid">
+        <div class="sum-card"><i class="fas fa-chart-line sm-ico"></i><div class="sm-lbl">NIFTY 50</div><div class="sm-val" id="sNifty">—</div><div class="sm-sub" id="sNiftyC">Connecting…</div></div>
+        <div class="sum-card"><i class="fas fa-chart-bar sm-ico"></i><div class="sm-lbl">SENSEX</div><div class="sm-val" id="sSensex">—</div><div class="sm-sub" id="sSensexC">Connecting…</div></div>
+        <div class="sum-card"><i class="fas fa-layer-group sm-ico"></i><div class="sm-lbl">Total Stocks</div><div class="sm-val" id="totalCnt">3,500+</div><div class="sm-sub">25+ Sectors</div></div>
+        <div class="sum-card"><i class="fas fa-bolt sm-ico"></i><div class="sm-lbl">Live Prices</div><div class="sm-val pos" id="liveTot">0</div><div class="sm-sub">Via yfinance API</div></div>
     </div>
 
-    <!-- Search and Filters -->
-    <div class="mb-6">
-        <div class="flex flex-col lg:flex-row gap-4">
-            <!-- Search Bar -->
-            <div class="flex-1">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
-                    <input type="text" id="searchStocks"
-                           class="w-full pl-12 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Search stocks (symbol, company, sector)...">
-                    <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">
-                        <span id="searchResultsCount">0</span> results
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filter Controls -->
-            <div class="flex gap-2">
-                <select id="sortBy" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 min-w-[180px]">
-                    <option value="market_cap_desc">Market Cap ▼</option>
-                    <option value="market_cap_asc">Market Cap ▲</option>
-                    <option value="change_desc">Change % ▼</option>
-                    <option value="change_asc">Change % ▲</option>
-                    <option value="price_desc">Price ▼</option>
-                    <option value="price_asc">Price ▲</option>
-                    <option value="name_asc">Name A-Z</option>
-                    <option value="name_desc">Name Z-A</option>
-                </select>
-
-                <select id="riskFilter" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 min-w-[140px]">
-                    <option value="all">All Risk</option>
-                    <option value="low">Low Risk</option>
-                    <option value="medium">Medium Risk</option>
-                    <option value="high">High Risk</option>
-                </select>
-
-                <select id="performanceFilter" class="bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 min-w-[150px]">
-                    <option value="all">All Performance</option>
-                    <option value="gainers">Top Gainers</option>
-                    <option value="losers">Top Losers</option>
-                    <option value="active">Most Active</option>
-                </select>
-            </div>
-        </div>
+    <!-- CAP FILTER -->
+    <div class="cap-row">
+        <div class="cap-card active" id="capAll" onclick="setCapFilter('all')"><div class="cap-name"><i class="fas fa-layer-group" style="margin-right:5px"></i>All Stocks</div><div class="cap-count" id="cntAll">3,500+</div></div>
+        <div class="cap-card" id="capLarge" onclick="setCapFilter('large')"><div class="cap-name" style="color:#3b82f6"><i class="fas fa-building" style="margin-right:5px"></i>Large Cap</div><div class="cap-count" id="cntLarge">—</div></div>
+        <div class="cap-card" id="capMid"   onclick="setCapFilter('mid')"><div class="cap-name" style="color:#10b981"><i class="fas fa-chart-line" style="margin-right:5px"></i>Mid Cap</div><div class="cap-count" id="cntMid">—</div></div>
+        <div class="cap-card" id="capSmall" onclick="setCapFilter('small')"><div class="cap-name" style="color:#f59e0b"><i class="fas fa-chart-bar" style="margin-right:5px"></i>Small Cap</div><div class="cap-count" id="cntSmall">—</div></div>
     </div>
 
-    <!-- Sectors Filter -->
-    <div class="mb-6">
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="text-lg font-semibold text-white">Sector Classification</h3>
-            <button id="toggleSectors" class="text-sm text-blue-400 hover:text-blue-300">
-                <i class="fas fa-chevron-down mr-1"></i> Show All Sectors
-            </button>
-        </div>
-        <div id="sectorsContainer" class="flex flex-wrap gap-2">
-            <!-- Sectors will be loaded here dynamically -->
-            <div class="sector-chip px-4 py-2 rounded-full border border-blue-600 text-blue-400 bg-blue-900/20 active"
-                 onclick="filterBySector('all')">
-                All Sectors
-            </div>
-        </div>
-        <div id="moreSectors" class="hidden flex-wrap gap-2 mt-2">
-            <!-- Additional sectors will be loaded here -->
-        </div>
+    <!-- SECTORS -->
+    <div class="sect-wrap">
+        <div class="sect-hdr"><span><i class="fas fa-tags" style="color:var(--accent);margin-right:6px"></i>Sector Filter</span><button class="toggle-btn" id="sectorToggle" onclick="toggleSectors()">Show More ▾</button></div>
+        <div class="pills" id="pillsWrap"><div class="pill active" onclick="setSector('all')">All Sectors</div></div>
     </div>
 
-    <!-- Stocks Table Container -->
-    <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden mb-6">
-        <!-- Table Header -->
-        <div class="px-6 py-4 border-b border-gray-700 bg-gray-900/50">
-            <div class="flex justify-between items-center">
-                <div>
-                    <span class="font-semibold text-white" id="tableTitle">All Stocks</span>
-                    <span class="text-sm text-gray-400 ml-2" id="tableSubtitle">Showing 0 of 0</span>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-sm text-gray-400">
-                        <i class="fas fa-clock mr-1"></i>
-                        <span id="dataFreshness">Just now</span>
-                    </div>
-                    <button onclick="refreshAllData()" class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm">
-                        <i class="fas fa-sync-alt mr-1"></i> Refresh
-                    </button>
-                </div>
+    <!-- FILTERS -->
+    <div class="filter-bar">
+        <div class="srch-wrap"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="Search symbol, company, sector…" oninput="onSearch(this.value)"/><span class="srch-cnt" id="srchCnt">—</span></div>
+        <select id="sortSel" onchange="setSort(this.value)"><option value="mcap_d">Market Cap ▼</option><option value="mcap_a">Market Cap ▲</option><option value="chg_d">Change % ▼</option><option value="chg_a">Change % ▲</option><option value="price_d">Price ▼</option><option value="price_a">Price ▲</option><option value="name_a">Name A–Z</option></select>
+        <select id="riskSel" onchange="setRisk()"><option value="all">All Risk</option><option value="low">Low Risk</option><option value="medium">Medium</option><option value="high">High Risk</option></select>
+        <select id="perfSel" onchange="setPerf()"><option value="all">All</option><option value="gainers">Gainers</option><option value="losers">Losers</option></select>
+    </div>
+
+    <!-- TABLE -->
+    <div class="tbl-wrap">
+        <div class="tbl-hdr-bar">
+            <div><div class="tbl-title" id="tblTitle">All Stocks</div><div class="tbl-sub" id="tblSub">Loading…</div></div>
+            <div class="tbl-actions">
+                <span style="font-size:11px;color:var(--txt3)" id="freshness">—</span>
+                <button class="btn-sm" onclick="refreshAll()"><i class="fas fa-sync-alt"></i>Refresh</button>
             </div>
         </div>
-
-        <!-- Stocks Table -->
-        <div class="overflow-x-auto custom-scrollbar" style="max-height: 600px;">
-            <table class="w-full dark-table">
-                <thead>
-                <tr class="bg-gray-900">
-                    <th class="py-4 px-6 text-left font-semibold text-gray-300 sticky left-0 bg-gray-900 z-20">
-                        <div class="flex items-center">
-                            <i class="fas fa-hashtag mr-2"></i>
-                            <span>Symbol & Company</span>
-                        </div>
-                    </th>
-                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
-                        <div class="flex items-center">
-                            <i class="fas fa-tag mr-2"></i>
-                            <span>Sector</span>
-                        </div>
-                    </th>
-                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
-                        <div class="flex items-center">
-                            <i class="fas fa-layer-group mr-2"></i>
-                            <span>Market Cap</span>
-                        </div>
-                    </th>
-                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
-                        <div class="flex items-center">
-                            <i class="fas fa-bullhorn mr-2"></i>
-                            <span>Recommendation</span>
-                        </div>
-                    </th>
-                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
-                        <div class="flex items-center">
-                            <i class="fas fa-shield-alt mr-2"></i>
-                            <span>Risk Level</span>
-                        </div>
-                    </th>
-                    <th class="py-4 px-6 text-left font-semibold text-gray-300">
-                        <div class="flex items-center">
-                            <i class="fas fa-rupee-sign mr-2"></i>
-                            <span>Current Price</span>
-                        </div>
-                    </th>
-                    <th class="py-4 px-6 text-left font-semibold text-gray-300 sticky right-0 bg-gray-900 z-20">
-                        <div class="flex items-center">
-                            <i class="fas fa-bolt mr-2"></i>
-                            <span>Actions</span>
-                        </div>
-                    </th>
-                </tr>
-                </thead>
-                <tbody id="stocksTableBody">
-                <!-- Stocks will be loaded here dynamically -->
-                </tbody>
+        <div class="tbl-scroll">
+            <table>
+                <thead><tr>
+                    <th onclick="setSort('name_a')">Symbol &amp; Company</th>
+                    <th>Sector</th>
+                    <th>Market Cap</th>
+                    <th>Recommendation</th>
+                    <th>Risk</th>
+                    <th onclick="setSort('price_d')">Price</th>
+                    <th onclick="setSort('chg_d')">Change</th>
+                    <th>Actions</th>
+                </tr></thead>
+                <tbody id="tblBody"></tbody>
             </table>
-        </div>
-
-        <!-- Loading State -->
-        <div id="loadingState" class="p-8 text-center">
-            <div class="inline-block">
-                <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <div class="text-gray-400">Loading 3500+ stocks...</div>
-                <div class="text-sm text-gray-500 mt-2">Applying sector classification...</div>
-                <div class="mt-4 text-sm text-gray-500" id="loadingProgress">Initializing...</div>
-            </div>
-        </div>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="hidden p-8 text-center">
-            <i class="fas fa-search fa-3x text-gray-600 mb-4"></i>
-            <div class="text-gray-400 text-lg mb-2">No stocks found</div>
-            <div class="text-gray-500">Try changing your search or filters</div>
+            <div class="loading-state" id="loadState"><i class="fas fa-circle-notch spin"></i><div>Loading stocks…</div><div style="font-size:12px;margin-top:5px;color:var(--txt3)" id="loadProg">Initialising…</div></div>
+            <div class="empty-state" id="emptyState"><i class="fas fa-search" style="font-size:24px;margin-bottom:10px;display:block"></i>No stocks match your filters.</div>
         </div>
     </div>
 
-    <!-- Pagination -->
-    <div class="flex justify-between items-center mb-8">
-        <div class="text-gray-400 text-sm" id="paginationInfo">
-            Loading stocks data...
-        </div>
-        <div class="flex items-center space-x-2" id="pagination">
-            <button class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 disabled:opacity-50"
-                    disabled id="prevPage">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="flex items-center space-x-1" id="pageNumbers"></div>
-            <button class="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 disabled:opacity-50"
-                    disabled id="nextPage">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+    <!-- PAGINATION -->
+    <div class="pag-bar">
+        <div class="pag-info" id="pagInfo">—</div>
+        <div class="pag-btns">
+            <button class="pb" id="prevBtn" onclick="changePage(-1)" disabled><i class="fas fa-chevron-left"></i></button>
+            <div id="pageNums" style="display:flex;gap:4px"></div>
+            <button class="pb" id="nextBtn" onclick="changePage(1)" disabled><i class="fas fa-chevron-right"></i></button>
         </div>
     </div>
-
-    <!-- Data Source Info -->
-    <div class="text-center text-gray-500 text-sm border-t border-gray-800 pt-6">
-        <div class="flex flex-wrap justify-center items-center gap-4">
-            <div class="flex items-center">
-                <i class="fas fa-brain mr-2"></i>
-                <span>LSTM & Linear Regression models</span>
-            </div>
-            <div class="w-px h-4 bg-gray-700"></div>
-            <div class="flex items-center">
-                <i class="fas fa-industry mr-2"></i>
-                <span>25+ sectors identified</span>
-            </div>
-            <div class="w-px h-4 bg-gray-700"></div>
-            <div class="flex items-center">
-                <i class="fas fa-database mr-2"></i>
-                <span>3,500+ Indian companies</span>
-            </div>
-        </div>
+    <div style="text-align:center;color:var(--txt3);font-size:12px;border-top:1px solid var(--border);padding:18px 0 30px">
+        Real prices via Flask backend (yfinance/Yahoo Finance) · Not investment advice · © 2026 Vision Trade
     </div>
 </div>
 
-<script src="./main-dashboard.js"></script>
+<div class="status-bar">
+    <div class="sb-left">
+        <span id="sbStocks">0 stocks</span>
+        <span id="sbApi" style="color:var(--amber)">Backend: Connecting…</span>
+        <span id="sbSect">Sector: All</span>
+    </div>
+    <div class="sb-right" id="sbTime">--:--:--</div>
+</div>
+
+<script>
+    const API='http://127.0.0.1:5001';
+    const PER_PAGE=25;
+
+    /* ─ SECTOR COLOUR MAP ──────────────────────────────────────── */
+    const SC={
+        'Banking':      {bg:'rgba(59,130,246,.15)',  b:'#3b82f6'},
+        'Finance':      {bg:'rgba(16,185,129,.15)',  b:'#10b981'},
+        'IT':           {bg:'rgba(139,92,246,.15)',  b:'#8b5cf6'},
+        'Automobile':   {bg:'rgba(239,68,68,.12)',   b:'#ef4444'},
+        'Pharma':       {bg:'rgba(34,197,94,.12)',   b:'#22c55e'},
+        'FMCG':         {bg:'rgba(245,158,11,.12)',  b:'#f59e0b'},
+        'Energy':       {bg:'rgba(20,184,166,.15)',  b:'#14b8a6'},
+        'Metals':       {bg:'rgba(249,115,22,.15)',  b:'#f97316'},
+        'Infrastructure':{bg:'rgba(168,85,247,.15)', b:'#a855f7'},
+        'Telecom':      {bg:'rgba(236,72,153,.12)',  b:'#ec4899'},
+        'Real Estate':  {bg:'rgba(244,63,94,.12)',   b:'#f43f5e'},
+        'Healthcare':   {bg:'rgba(6,182,212,.15)',   b:'#06b6d4'},
+        'Chemicals':    {bg:'rgba(139,92,246,.12)',  b:'#8b5cf6'},
+        'Consumer Goods':{bg:'rgba(217,70,239,.12)', b:'#d946ef'},
+        'Oil & Gas':    {bg:'rgba(6,182,212,.12)',   b:'#06b6d4'},
+        'Cement':       {bg:'rgba(148,163,184,.12)', b:'#94a3b8'},
+        'Textiles':     {bg:'rgba(251,191,36,.12)',  b:'#fbbf24'},
+        'Media':        {bg:'rgba(244,114,182,.12)', b:'#f472b6'},
+        'Agriculture':  {bg:'rgba(101,163,13,.12)',  b:'#65a30d'},
+        'Aviation':     {bg:'rgba(2,132,199,.15)',   b:'#0284c7'},
+        'Retail':       {bg:'rgba(192,38,211,.12)',  b:'#c026d3'},
+        'Insurance':    {bg:'rgba(5,150,105,.15)',   b:'#059669'},
+        'Logistics':    {bg:'rgba(124,58,237,.15)',  b:'#7c3aed'},
+        'Power':        {bg:'rgba(234,88,12,.12)',   b:'#ea580c'},
+        'Defence':      {bg:'rgba(220,38,38,.12)',   b:'#dc2626'},
+        'Railway':      {bg:'rgba(2,132,199,.12)',   b:'#0284c7'},
+        'PSU':          {bg:'rgba(30,64,175,.15)',   b:'#1e40af'},
+        'Other':        {bg:'rgba(100,116,139,.12)', b:'#64748b'},
+    };
+    const sc=s=>(SC[s]||SC['Other']);
+
+    /* ─ SECTOR MAP ─────────────────────────────────────────────── */
+    const SM={'HDFCBANK':'Banking','ICICIBANK':'Banking','SBIN':'Banking','KOTAKBANK':'Banking','AXISBANK':'Banking','INDUSINDBK':'Banking','BANDHANBNK':'Banking','IDFCFIRSTB':'Banking','YESBANK':'Banking','FEDERALBNK':'Banking','RBLBANK':'Banking','AUBANK':'Banking','BANKBARODA':'Banking','PNB':'Banking','CANBK':'Banking','UNIONBANK':'Banking','BANKINDIA':'Banking','INDIANB':'Banking','CENTRALBK':'Banking','UCOBANK':'Banking','MAHABANK':'Banking','EQUITAS':'Banking','UJJIVANSFB':'Banking','DCBBANK':'Banking','TCS':'IT','INFY':'IT','WIPRO':'IT','HCLTECH':'IT','TECHM':'IT','LTIM':'IT','MPHASIS':'IT','PERSISTENT':'IT','COFORGE':'IT','LTTS':'IT','TATAELXSI':'IT','CYIENT':'IT','ZENSARTECH':'IT','SONATSOFTW':'IT','AFFLE':'IT','ROUTE':'IT','TANLA':'IT','NAUKRI':'IT','ZOMATO':'IT','PAYTM':'IT','RELIANCE':'Energy','ONGC':'Energy','IOC':'Energy','BPCL':'Energy','HINDPETRO':'Energy','GAIL':'Energy','PETRONET':'Energy','IGL':'Energy','MGL':'Energy','NTPC':'Power','POWERGRID':'Power','TATAPOWER':'Power','ADANIPOWER':'Power','JSWENERGY':'Power','TORNTPOWER':'Power','NHPC':'Power','SJVN':'Power','ADANIGREEN':'Power','SUZLON':'Power','MARUTI':'Automobile','TATAMOTORS':'Automobile','BAJAJ-AUTO':'Automobile','HEROMOTOCO':'Automobile','EICHERMOT':'Automobile','ASHOKLEY':'Automobile','TVSMOTOR':'Automobile','ESCORTS':'Automobile','MRF':'Automobile','APOLLOTYRE':'Automobile','CEATLTD':'Automobile','BALKRISIND':'Automobile','BHARATFORG':'Automobile','MOTHERSON':'Automobile','BOSCHLTD':'Automobile','SUNPHARMA':'Pharma','DRREDDY':'Pharma','CIPLA':'Pharma','LUPIN':'Pharma','DIVISLAB':'Pharma','AUROPHARMA':'Pharma','BIOCON':'Pharma','TORNTPHARM':'Pharma','ALKEM':'Pharma','GLENMARK':'Pharma','HINDUNILVR':'FMCG','ITC':'FMCG','NESTLEIND':'FMCG','BRITANNIA':'FMCG','DABUR':'FMCG','GODREJCP':'FMCG','MARICO':'FMCG','COLPAL':'FMCG','EMAMILTD':'FMCG','VBL':'FMCG','JUBLFOOD':'FMCG','DMART':'Retail','TRENT':'Retail','BATAINDIA':'Retail','TATASTEEL':'Metals','JSWSTEEL':'Metals','HINDALCO':'Metals','VEDL':'Metals','JINDALSTEL':'Metals','SAIL':'Metals','NMDC':'Metals','NATIONALUM':'Metals','HINDZINC':'Metals','APLAPOLLO':'Metals','LT':'Infrastructure','ADANIPORTS':'Infrastructure','NCC':'Infrastructure','KEC':'Infrastructure','NBCC':'Infrastructure','IRCON':'Railway','RVNL':'Railway','RAILTEL':'Railway','IRCTC':'Railway','BAJFINANCE':'Finance','BAJAJFINSV':'Finance','CHOLAFIN':'Finance','MUTHOOTFIN':'Finance','MANAPPURAM':'Finance','PFC':'Finance','RECLTD':'Finance','HDFCAMC':'Finance','HDFCLIFE':'Insurance','SBILIFE':'Insurance','ICICIPRULI':'Insurance','ICICIGI':'Insurance','LICI':'Insurance','DLF':'Real Estate','GODREJPROP':'Real Estate','OBEROIRLTY':'Real Estate','PRESTIGE':'Real Estate','BRIGADE':'Real Estate','SOBHA':'Real Estate','PHOENIXLTD':'Real Estate','APOLLOHOSP':'Healthcare','FORTIS':'Healthcare','MAXHEALTH':'Healthcare','METROPOLIS':'Healthcare','UPL':'Chemicals','PIDILITIND':'Chemicals','SRF':'Chemicals','TATACHEM':'Chemicals','AARTIIND':'Chemicals','DEEPAKNTR':'Chemicals','NAVINFLUOR':'Chemicals','PIIND':'Chemicals','ULTRACEMCO':'Cement','SHREECEM':'Cement','ACC':'Cement','AMBUJACEM':'Cement','RAMCOCEM':'Cement','DALBHARAT':'Cement','TITAN':'Consumer Goods','ASIANPAINT':'Consumer Goods','BERGEPAINT':'Consumer Goods','HAVELLS':'Consumer Goods','CROMPTON':'Consumer Goods','VOLTAS':'Consumer Goods','DIXON':'Consumer Goods','POLYCAB':'Consumer Goods','BHARTIARTL':'Telecom','IDEA':'Telecom','TATACOMM':'Telecom','INDUSTOWER':'Telecom','ZEEL':'Media','SUNTV':'Media','PVRINOX':'Media','HAL':'Defence','BEL':'Defence','BDL':'Defence','BEML':'Defence','BHEL':'PSU','COALINDIA':'PSU','CONCOR':'Logistics','BLUEDART':'Logistics','DELHIVERY':'Logistics','INDIGO':'Aviation','SPICEJET':'Aviation','ARVIND':'Textiles','KPRMILL':'Textiles','TRIDENT':'Textiles','WELSPUNIND':'Textiles','M&M':'Automobile','GRASIM':'Chemicals'};
+    function classify(sym,name){if(SM[sym])return SM[sym];const u=(name||'').toUpperCase();if(u.includes('BANK'))return 'Banking';if(u.includes('TECH')||u.includes('SOFTWARE'))return 'IT';if(u.includes('PHARMA'))return 'Pharma';if(u.includes('AUTO')||u.includes('MOTOR'))return 'Automobile';if(u.includes('POWER'))return 'Power';if(u.includes('OIL')||u.includes('GAS'))return 'Oil & Gas';if(u.includes('STEEL')||u.includes('METAL'))return 'Metals';if(u.includes('CEMENT'))return 'Cement';if(u.includes('CHEM'))return 'Chemicals';if(u.includes('INFRA'))return 'Infrastructure';return 'Other';}
+
+    /* ─ STOCKS BASE ────────────────────────────────────────────── */
+    const STOCKS_BASE=[{sym:'RELIANCE',name:'Reliance Industries Limited'},{sym:'TCS',name:'Tata Consultancy Services Limited'},{sym:'HDFCBANK',name:'HDFC Bank Limited'},{sym:'INFY',name:'Infosys Limited'},{sym:'ICICIBANK',name:'ICICI Bank Limited'},{sym:'HINDUNILVR',name:'Hindustan Unilever Limited'},{sym:'ITC',name:'ITC Limited'},{sym:'SBIN',name:'State Bank of India'},{sym:'BHARTIARTL',name:'Bharti Airtel Limited'},{sym:'KOTAKBANK',name:'Kotak Mahindra Bank Limited'},{sym:'LT',name:'Larsen & Toubro Limited'},{sym:'AXISBANK',name:'Axis Bank Limited'},{sym:'BAJFINANCE',name:'Bajaj Finance Limited'},{sym:'ASIANPAINT',name:'Asian Paints Limited'},{sym:'MARUTI',name:'Maruti Suzuki India Limited'},{sym:'TITAN',name:'Titan Company Limited'},{sym:'SUNPHARMA',name:'Sun Pharmaceutical Industries Limited'},{sym:'ULTRACEMCO',name:'UltraTech Cement Limited'},{sym:'NESTLEIND',name:'Nestle India Limited'},{sym:'BAJAJFINSV',name:'Bajaj Finserv Limited'},{sym:'WIPRO',name:'Wipro Limited'},{sym:'M&M',name:'Mahindra & Mahindra Limited'},{sym:'HCLTECH',name:'HCL Technologies Limited'},{sym:'TATAMOTORS',name:'Tata Motors Limited'},{sym:'TATASTEEL',name:'Tata Steel Limited'},{sym:'ONGC',name:'Oil and Natural Gas Corporation Limited'},{sym:'NTPC',name:'NTPC Limited'},{sym:'POWERGRID',name:'Power Grid Corporation of India Limited'},{sym:'JSWSTEEL',name:'JSW Steel Limited'},{sym:'INDUSINDBK',name:'IndusInd Bank Limited'},{sym:'TECHM',name:'Tech Mahindra Limited'},{sym:'HINDALCO',name:'Hindalco Industries Limited'},{sym:'COALINDIA',name:'Coal India Limited'},{sym:'ADANIENT',name:'Adani Enterprises Limited'},{sym:'ADANIPORTS',name:'Adani Ports and SEZ Limited'},{sym:'HEROMOTOCO',name:'Hero MotoCorp Limited'},{sym:'DIVISLAB',name:"Divi's Laboratories Limited"},{sym:'DRREDDY',name:"Dr. Reddy's Laboratories Limited"},{sym:'CIPLA',name:'Cipla Limited'},{sym:'BRITANNIA',name:'Britannia Industries Limited'},{sym:'EICHERMOT',name:'Eicher Motors Limited'},{sym:'GRASIM',name:'Grasim Industries Limited'},{sym:'SHREECEM',name:'Shree Cement Limited'},{sym:'APOLLOHOSP',name:'Apollo Hospitals Enterprise Limited'},{sym:'TATACONSUM',name:'Tata Consumer Products Limited'},{sym:'VEDL',name:'Vedanta Limited'},{sym:'BPCL',name:'Bharat Petroleum Corporation Limited'},{sym:'IOC',name:'Indian Oil Corporation Limited'},{sym:'HINDZINC',name:'Hindustan Zinc Limited'},{sym:'BANDHANBNK',name:'Bandhan Bank Limited'},{sym:'FEDERALBNK',name:'The Federal Bank Limited'},{sym:'IDFCFIRSTB',name:'IDFC First Bank Limited'},{sym:'RBLBANK',name:'RBL Bank Limited'},{sym:'YESBANK',name:'Yes Bank Limited'},{sym:'BANKBARODA',name:'Bank of Baroda'},{sym:'PNB',name:'Punjab National Bank'},{sym:'CANBK',name:'Canara Bank'},{sym:'UNIONBANK',name:'Union Bank of India'},{sym:'AUBANK',name:'AU Small Finance Bank Limited'},{sym:'LTIM',name:'LTIMindtree Limited'},{sym:'PERSISTENT',name:'Persistent Systems Limited'},{sym:'COFORGE',name:'Coforge Limited'},{sym:'MPHASIS',name:'MPhasis Limited'},{sym:'LTTS',name:'L&T Technology Services Limited'},{sym:'TATAELXSI',name:'Tata Elxsi Limited'},{sym:'CYIENT',name:'Cyient Limited'},{sym:'AFFLE',name:'Affle (India) Limited'},{sym:'NAUKRI',name:'Info Edge (India) Limited'},{sym:'ZOMATO',name:'Zomato Limited'},{sym:'LUPIN',name:'Lupin Limited'},{sym:'BIOCON',name:'Biocon Limited'},{sym:'TORNTPHARM',name:'Torrent Pharmaceuticals Limited'},{sym:'AUROPHARMA',name:'Aurobindo Pharma Limited'},{sym:'ALKEM',name:'Alkem Laboratories Limited'},{sym:'BAJAJ-AUTO',name:'Bajaj Auto Limited'},{sym:'TVSMOTOR',name:'TVS Motor Company Limited'},{sym:'ASHOKLEY',name:'Ashok Leyland Limited'},{sym:'MRF',name:'MRF Limited'},{sym:'APOLLOTYRE',name:'Apollo Tyres Limited'},{sym:'BALKRISIND',name:'Balkrishna Industries Limited'},{sym:'BHARATFORG',name:'Bharat Forge Limited'},{sym:'DABUR',name:'Dabur India Limited'},{sym:'GODREJCP',name:'Godrej Consumer Products Limited'},{sym:'MARICO',name:'Marico Limited'},{sym:'COLPAL',name:'Colgate-Palmolive (India) Limited'},{sym:'VBL',name:'Varun Beverages Limited'},{sym:'DMART',name:'Avenue Supermarts Limited'},{sym:'TRENT',name:'Trent Limited'},{sym:'JINDALSTEL',name:'Jindal Steel & Power Limited'},{sym:'SAIL',name:'Steel Authority of India Limited'},{sym:'NMDC',name:'NMDC Limited'},{sym:'GAIL',name:'GAIL (India) Limited'},{sym:'PETRONET',name:'Petronet LNG Limited'},{sym:'IGL',name:'Indraprastha Gas Limited'},{sym:'TATAPOWER',name:'Tata Power Company Limited'},{sym:'JSWENERGY',name:'JSW Energy Limited'},{sym:'NHPC',name:'NHPC Limited'},{sym:'SUZLON',name:'Suzlon Energy Limited'},{sym:'ACC',name:'ACC Limited'},{sym:'AMBUJACEM',name:'Ambuja Cements Limited'},{sym:'RAMCOCEM',name:'The Ramco Cements Limited'},{sym:'DALBHARAT',name:'Dalmia Bharat Limited'},{sym:'CHOLAFIN',name:'Cholamandalam Investment and Finance Company Limited'},{sym:'MUTHOOTFIN',name:'Muthoot Finance Limited'},{sym:'MANAPPURAM',name:'Manappuram Finance Limited'},{sym:'PFC',name:'Power Finance Corporation Limited'},{sym:'RECLTD',name:'REC Limited'},{sym:'HDFCAMC',name:'HDFC Asset Management Company Limited'},{sym:'HDFCLIFE',name:'HDFC Life Insurance Company Limited'},{sym:'SBILIFE',name:'SBI Life Insurance Company Limited'},{sym:'ICICIPRULI',name:'ICICI Prudential Life Insurance Company Limited'},{sym:'DLF',name:'DLF Limited'},{sym:'GODREJPROP',name:'Godrej Properties Limited'},{sym:'PRESTIGE',name:'Prestige Estates Projects Limited'},{sym:'UPL',name:'UPL Limited'},{sym:'PIDILITIND',name:'Pidilite Industries Limited'},{sym:'SRF',name:'SRF Limited'},{sym:'TATACHEM',name:'Tata Chemicals Limited'},{sym:'DEEPAKNTR',name:'Deepak Nitrite Limited'},{sym:'NAVINFLUOR',name:'Navin Fluorine International Limited'},{sym:'NCC',name:'NCC Limited'},{sym:'NBCC',name:'NBCC (India) Limited'},{sym:'IRCON',name:'IRCON International Limited'},{sym:'RVNL',name:'Rail Vikas Nigam Limited'},{sym:'INDUSTOWER',name:'Indus Towers Limited'},{sym:'TRIDENT',name:'Trident Limited'},{sym:'ZEEL',name:'Zee Entertainment Enterprises Limited'},{sym:'SUNTV',name:'Sun TV Network Limited'},{sym:'PVRINOX',name:'PVR INOX Limited'},{sym:'HAL',name:'Hindustan Aeronautics Limited'},{sym:'BEL',name:'Bharat Electronics Limited'},{sym:'BDL',name:'Bharat Dynamics Limited'},{sym:'BEML',name:'BEML Limited'},{sym:'BHEL',name:'Bharat Heavy Electricals Limited'},{sym:'CONCOR',name:'Container Corporation of India Limited'},{sym:'HAVELLS',name:'Havells India Limited'},{sym:'CROMPTON',name:'Crompton Greaves Consumer Electricals Limited'},{sym:'VOLTAS',name:'Voltas Limited'},{sym:'DIXON',name:'Dixon Technologies (India) Limited'},{sym:'POLYCAB',name:'Polycab India Limited'},{sym:'BERGEPAINT',name:'Berger Paints India Limited'},{sym:'INDIGO',name:'InterGlobe Aviation Limited'},{sym:'BATAINDIA',name:'Bata India Limited'},{sym:'IRCTC',name:'Indian Railway Catering and Tourism Corporation'},{sym:'RAILTEL',name:'RailTel Corporation of India Limited'},{sym:'HINDPETRO',name:'Hindustan Petroleum Corporation Limited'},{sym:'ADANIGREEN',name:'Adani Green Energy Limited'},{sym:'ADANIPOWER',name:'Adani Power Limited'}];
+
+    /* ─ STATE ─────────────────────────────────────────────────── */
+    let allStocks=[],filtered=[],page=1,sortKey='mcap_d',selSect='all',selCap='all',selRisk='all',selPerf='all',query='',liveCount=0,sectOpen=false,sectDist={};
+
+    /* ─ UTILS ──────────────────────────────────────────────────── */
+    const fi=(n,d=2)=>n!=null&&!isNaN(n)?Number(n).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+    const sgn=n=>n>=0?'+':'';
+    const pct=n=>n!=null?`${sgn(n)}${Number(n).toFixed(2)}%`:'—';
+    const cls=n=>n>=0?'pos':'neg';
+    function fmtMC(v){if(v>=1e12)return '₹'+(v/1e12).toFixed(2)+'L Cr';if(v>=1e10)return '₹'+(v/1e10).toFixed(2)+'K Cr';if(v>=1e9)return '₹'+(v/1e9).toFixed(2)+' Cr';return '₹'+(v/1e7).toFixed(2)+' L';}
+    function capType(mc){if(mc>=2e12)return 'large';if(mc>=5e11)return 'mid';return 'small';}
+    function genMC(i){if(i<50)return 5e12+Math.random()*5e12;if(i<150)return 5e11+Math.random()*1.5e12;if(i<500)return 1e10+Math.random()*5e11;return 1e8+Math.random()*1e10;}
+    function genPrice(sym){const h=sym.split('').reduce((a,c)=>a+c.charCodeAt(0),0);return(h%4000)+100;}
+    function getRec(chgP){if(chgP>4)return['Strong Buy','rsb'];if(chgP>1.5)return['Buy','rb'];if(chgP>-1.5)return['Hold','rh'];if(chgP>-4)return['Sell','rs'];return['Strong Sell','rss'];}
+    function getRisk(cap){return cap==='large'?'low':cap==='mid'?'medium':'high';}
+
+    /* ─ CLOCK / MARKET STATUS ─────────────────────────────────── */
+    function tickClock(){const t=new Date().toLocaleTimeString('en-IN',{hour12:false});document.getElementById('sbTime').textContent=t;}
+    setInterval(tickClock,1000);tickClock();
+    function setMktStatus(){const h=new Date().getHours(),m=new Date().getMinutes();const open=(h>9||(h===9&&m>=15))&&(h<15||(h===15&&m<=30));const tag=document.getElementById('mktTag');tag.textContent=open?'OPEN':'CLOSED';tag.className=`mkt-tag ${open?'mkt-open':'mkt-closed'}`;const ms=document.getElementById('mktStat');if(ms){ms.textContent=open?'NSE OPEN':'CLOSED';ms.style.color=open?'var(--green)':'var(--red)';}}
+    setMktStatus();setInterval(setMktStatus,60000);
+
+    /* ─ BUILD UNIVERSE ─────────────────────────────────────────── */
+    function buildUniverse(){
+        allStocks=[];sectDist={};
+        STOCKS_BASE.forEach((s,i)=>{
+            const sector=classify(s.sym,s.name);
+            const mc=genMC(i);const cap=capType(mc);const risk=getRisk(cap);
+            const base=genPrice(s.sym);const chgP=(Math.random()-.45)*6;
+            const price=Math.max(1,base*(1+chgP/100));
+            const [rec,recCls]=getRec(chgP);
+            allStocks.push({sym:s.sym,name:s.name,sector,mc,cap,risk,price:+price.toFixed(2),prevClose:base,change:+(price-base).toFixed(2),changePercent:+chgP.toFixed(2),rec,recCls,isLive:false,isReal:true});
+            sectDist[sector]=(sectDist[sector]||0)+1;
+        });
+        // Synthetic to ~3500
+        const pre=['Aditya','Alok','Ambuja','Arvind','Ashok','Balaji','Bharat','Birla','Deepak','Everest','Fortune','Galaxy','Gujarat','Hindustan','Indo','Jain','Jindal','Kalyani','Kirloskar','Lakshmi','Mahindra','Modern','Nagarjuna','National','Orient','Patel','Pratibha','Rajesh','Ratan','Sakshi','Sharma','Shree','Surya','Triveni','Unitech','Vardhman','Vijay','Vishal','Zenith'];
+        const suf=['Industries','Limited','Corporation','Enterprises','Solutions','Technologies','Systems','Finance','Motors','Steel','Power','Energy','Pharma','Healthcare','Textiles','Chemicals','Foods','Trading','Manufacturing','Engineering','Constructions','Developers','Infrastructure','Realty','Logistics'];
+        for(let i=STOCKS_BASE.length;i<3500;i++){
+            const name=`${pre[i%pre.length]} ${suf[i%suf.length]}`;
+            const sym=`${pre[i%pre.length].slice(0,3).toUpperCase()}${suf[i%suf.length].slice(0,3).toUpperCase()}${i%100}`;
+            const sector=classify(sym,name);const mc=genMC(i);const cap=capType(mc);const risk=getRisk(cap);
+            const base=genPrice(sym);const chgP=(Math.random()-.45)*8;const price=Math.max(1,base*(1+chgP/100));
+            const [rec,recCls]=getRec(chgP);
+            allStocks.push({sym,name,sector,mc,cap,risk,price:+price.toFixed(2),prevClose:base,change:+(price-base).toFixed(2),changePercent:+chgP.toFixed(2),rec,recCls,isLive:false,isReal:false});
+            sectDist[sector]=(sectDist[sector]||0)+1;
+        }
+        buildPills();updateCapCounts();
+        document.getElementById('totalCnt').textContent=allStocks.length.toLocaleString()+'+';
+        document.getElementById('sbStocks').textContent=allStocks.length.toLocaleString()+' stocks loaded';
+    }
+
+    function buildPills(){
+        const wrap=document.getElementById('pillsWrap');
+        const allPill=wrap.querySelector('.pill');wrap.innerHTML='';wrap.appendChild(allPill);
+        Object.entries(sectDist).sort((a,b)=>b[1]-a[1]).forEach(([s,c],i)=>{
+            const p=document.createElement('div');
+            const col=sc(s);
+            p.className='pill';p.style.cssText=`border-color:${col.b};display:${i<10?'':'none'}`;
+            p.innerHTML=`${s}<span class="pill-cnt">${c}</span>`;
+            p.onclick=()=>setSector(s);wrap.appendChild(p);
+        });
+    }
+
+    function updateCapCounts(){
+        const lc=allStocks.filter(s=>s.cap==='large').length;
+        const mc=allStocks.filter(s=>s.cap==='mid').length;
+        const sc2=allStocks.filter(s=>s.cap==='small').length;
+        document.getElementById('cntAll').textContent=allStocks.length.toLocaleString()+'+';
+        document.getElementById('cntLarge').textContent=lc.toLocaleString();
+        document.getElementById('cntMid').textContent=mc.toLocaleString();
+        document.getElementById('cntSmall').textContent=sc2.toLocaleString();
+    }
+
+    window.setSector=function(s){selSect=s;page=1;document.querySelectorAll('.pill').forEach(p=>{const t=p.textContent.trim().replace(/\d+$/,'').trim();p.classList.toggle('active',t===s||(s==='all'&&t==='All Sectors'));});document.getElementById('sbSect').textContent=`Sector: ${s==='all'?'All':s}`;applyAndRender();};
+    window.toggleSectors=function(){sectOpen=!sectOpen;document.querySelectorAll('#pillsWrap .pill:not(:first-child)').forEach(p=>{p.style.display=sectOpen?'':'none';});document.querySelectorAll('#pillsWrap .pill:not(:first-child)').forEach((p,i)=>{if(sectOpen)p.style.display='';else p.style.display=i<10?'':'none';});document.getElementById('sectorToggle').textContent=sectOpen?'Show Less ▴':'Show More ▾';};
+    window.setCapFilter=function(cap){selCap=cap;page=1;['All','Large','Mid','Small'].forEach(c=>document.getElementById('cap'+c)?.classList.toggle('active',c.toLowerCase()===(cap==='all'?'all':cap)));document.getElementById('capAll').classList.toggle('active',cap==='all');applyAndRender();};
+    window.setSort=function(k){sortKey=k;page=1;applyAndRender();};
+    window.setRisk=function(){selRisk=document.getElementById('riskSel').value;page=1;applyAndRender();};
+    window.setPerf=function(){selPerf=document.getElementById('perfSel').value;page=1;applyAndRender();};
+    window.onSearch=function(v){query=v.trim().toLowerCase();page=1;applyAndRender();};
+
+    /* ─ FILTER + SORT ──────────────────────────────────────────── */
+    function applyAndRender(){
+        filtered=allStocks.filter(s=>{
+            if(selCap!=='all'&&s.cap!==selCap)return false;
+            if(selSect!=='all'&&s.sector!==selSect)return false;
+            if(selRisk!=='all'&&s.risk!==selRisk)return false;
+            if(selPerf==='gainers'&&s.changePercent<=0)return false;
+            if(selPerf==='losers'&&s.changePercent>=0)return false;
+            if(query&&!s.sym.toLowerCase().includes(query)&&!s.name.toLowerCase().includes(query)&&!s.sector.toLowerCase().includes(query))return false;
+            return true;
+        });
+        const sortMap={'mcap_d':(a,b)=>b.mc-a.mc,'mcap_a':(a,b)=>a.mc-b.mc,'chg_d':(a,b)=>b.changePercent-a.changePercent,'chg_a':(a,b)=>a.changePercent-b.changePercent,'price_d':(a,b)=>b.price-a.price,'price_a':(a,b)=>a.price-b.price,'name_a':(a,b)=>a.name.localeCompare(b.name)};
+        filtered.sort(sortMap[sortKey]||(()=>0));
+        document.getElementById('srchCnt').textContent=filtered.length.toLocaleString();
+        renderTable();
+    }
+
+    /* ─ RENDER TABLE ───────────────────────────────────────────── */
+    function renderTable(){
+        const tbody=document.getElementById('tblBody');
+        const ls=document.getElementById('loadState');
+        const es=document.getElementById('emptyState');
+        if(!filtered.length){tbody.innerHTML='';ls.style.display='none';es.style.display='block';updatePag();return;}
+        ls.style.display='none';es.style.display='none';
+        const start=(page-1)*PER_PAGE,end=start+PER_PAGE;
+        tbody.innerHTML='';
+        filtered.slice(start,end).forEach(s=>{
+            const c=sc(s.sector);
+            const capCls={large:'bl',mid:'bm',small:'bs',micro:'bx'}[s.cap]||'bs';
+            const riskCls={low:'rlow',medium:'rmed',high:'rhigh'}[s.risk];
+            const riskTxt=s.risk.charAt(0).toUpperCase()+s.risk.slice(1);
+            const chgCls=s.changePercent>=0?'pos-bg':'neg-bg';
+            const tr=document.createElement('tr');
+            tr.onclick=()=>analyze(s);
+            tr.innerHTML=`
+      <td><div class="sym-cell"><div class="sym-ico-sm" style="background:${c.bg};border:1px solid ${c.b}">${s.sym.charAt(0)}</div><div><div class="sym-bold">${s.sym}${s.isLive?'<span class="live-dot-sm"></span>':''}</div><div class="sym-name" title="${s.name}">${s.name}</div></div></div></td>
+      <td><span class="sect-pill" style="background:${c.bg};border-color:${c.b};color:${c.b}">${s.sector}</span></td>
+      <td><div><span class="cap-badge ${capCls}">${s.cap.toUpperCase()}</span></div><div style="font-size:10px;color:var(--txt3);margin-top:2px;font-family:'DM Mono',monospace">${fmtMC(s.mc)}</div></td>
+      <td><span class="rec ${s.recCls}">${s.rec}</span></td>
+      <td><span class="risk-lbl ${riskCls}">${riskTxt}</span></td>
+      <td><div class="price-cell ${cls(s.changePercent)}">₹${fi(s.price)}</div></td>
+      <td><span class="chg-cell ${chgCls}">${pct(s.changePercent)}</span></td>
+      <td><button class="analyze-btn" onclick="event.stopPropagation();analyze(${JSON.stringify(s).replace(/"/g,'&quot;')})"><i class="fas fa-chart-bar"></i>Analyze</button></td>`;
+            tbody.appendChild(tr);
+        });
+        const total=filtered.length,st=(page-1)*PER_PAGE+1,en=Math.min(page*PER_PAGE,total);
+        document.getElementById('tblTitle').textContent=selSect==='all'?'All Stocks':`${selSect} Stocks`;
+        document.getElementById('tblSub').textContent=`Showing ${st}–${en} of ${total.toLocaleString()} stocks`;
+        document.getElementById('pagInfo').innerHTML=`Page <strong>${page}</strong> of <strong>${Math.ceil(total/PER_PAGE)}</strong> · ${total.toLocaleString()} stocks`;
+        updatePag();
+    }
+
+    /* ─ PAGINATION ─────────────────────────────────────────────── */
+    function updatePag(){
+        const total=Math.ceil(filtered.length/PER_PAGE)||1;
+        document.getElementById('prevBtn').disabled=page<=1;
+        document.getElementById('nextBtn').disabled=page>=total;
+        const nums=document.getElementById('pageNums');nums.innerHTML='';
+        const show=new Set([1,total,page,...[...Array(5).keys()].map(i=>page-2+i)].filter(p=>p>=1&&p<=total));
+        [...show].sort((a,b)=>a-b).forEach((p2,i,arr)=>{
+            if(i&&arr[i-1]!==p2-1){const d=document.createElement('span');d.textContent='…';d.style.cssText='color:var(--txt3);padding:0 3px';nums.appendChild(d);}
+            const b=document.createElement('button');b.className=`pb${p2===page?' active':''}`;b.textContent=p2;b.onclick=()=>{page=p2;renderTable();window.scrollTo({top:0,behavior:'smooth'})};nums.appendChild(b);
+        });
+    }
+    window.changePage=function(d){page+=d;renderTable();window.scrollTo({top:0,behavior:'smooth'});};
+
+    /* ─ ANALYZE ─────────────────────────────────────────────────── */
+    function analyze(s){
+        sessionStorage.setItem('analyzingStock',JSON.stringify({symbol:s.sym,name:s.name,currentPrice:s.price,change:s.change,changePercent:s.changePercent}));
+        window.location.href='analyze.html';
+    }
+
+    /* ─ FETCH REAL PRICES ──────────────────────────────────────── */
+    async function fetchRealPrices(){
+        const realStocks=allStocks.filter(s=>s.isReal);
+        const BATCH=8;
+        for(let i=0;i<realStocks.length;i+=BATCH){
+            const batch=realStocks.slice(i,i+BATCH);
+            await Promise.allSettled(batch.map(async s=>{
+                try{
+                    const r=await fetch(`${API}/api/stock/${s.sym}`,{signal:AbortSignal.timeout(8000)});
+                    if(!r.ok)return;
+                    const d=await r.json();
+                    if(d.status!=='success'||!d.currentPrice)return;
+                    s.price=+d.currentPrice.toFixed(2);
+                    s.change=+d.change.toFixed(2);
+                    s.changePercent=+d.changePercent.toFixed(2);
+                    s.prevClose=d.previousClose;
+                    if(d.marketCap)s.mc=d.marketCap;
+                    s.cap=capType(s.mc);s.risk=getRisk(s.cap);
+                    const[rec,rcls]=getRec(s.changePercent);s.rec=rec;s.recCls=rcls;
+                    s.isLive=true;liveCount++;
+                }catch(e){}
+            }));
+            document.getElementById('liveCount').textContent=liveCount;
+            document.getElementById('liveTot').textContent=liveCount;
+            document.getElementById('livePriceCnt').textContent=`${liveCount} / ${realStocks.length}`;
+            document.getElementById('loadProg').textContent=`Live prices: ${liveCount}/${realStocks.length}`;
+            if(i===0)applyAndRender();
+            await new Promise(r=>setTimeout(r,120));
+        }
+        applyAndRender();
+        setLastUpdate();
+        document.getElementById('sbApi').textContent=`Backend: ✓ ${liveCount} live prices`;
+        document.getElementById('sbApi').style.color='var(--green)';
+    }
+
+    /* ─ INDICES ─────────────────────────────────────────────────── */
+    async function loadIndices(){
+        for(const [sym,vid,cid] of [['^NSEI','sNifty','sNiftyC'],['^BSESN','sSensex','sSensexC']]){
+            try{
+                const r=await fetch(`${API}/api/index/${encodeURIComponent(sym)}`,{signal:AbortSignal.timeout(8000)});
+                if(!r.ok)continue;
+                const d=await r.json();
+                if(d.status!=='success')continue;
+                const vc=d.change>=0?'var(--green)':'var(--red)';
+                document.getElementById(vid).textContent=`₹${fi(d.current)}`;
+                document.getElementById(vid).style.color=vc;
+                document.getElementById(cid).textContent=`${sgn(d.change)}${fi(d.change)} (${pct(d.changePercent)})`;
+                document.getElementById(cid).style.color=vc;
+            }catch(e){}
+        }
+    }
+
+    function setLastUpdate(){
+        const t=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        document.getElementById('lastUpdate').textContent=t;
+        document.getElementById('freshness').textContent=`Updated ${t}`;
+    }
+
+    window.refreshAll=async function(){
+        liveCount=0;
+        await loadIndices();
+        await fetchRealPrices();
+    };
+
+    /* ─ MAIN ─────────────────────────────────────────────────────── */
+    async function main(){
+        buildUniverse();
+        document.getElementById('loadState').style.display='none';
+        applyAndRender();
+        document.querySelectorAll('#pillsWrap .pill:not(:first-child)').forEach((p,i)=>{p.style.display=i<10?'':'none';});
+
+        // Check backend
+        let online=false;
+        try{const r=await fetch(`${API}/api/health`,{signal:AbortSignal.timeout(3000)});online=r.ok;}catch(e){}
+        if(!online){
+            document.getElementById('errBar').classList.add('show');
+            document.getElementById('sbApi').textContent='Backend: OFFLINE';
+            document.getElementById('sbApi').style.color='var(--red)';
+        } else {
+            await loadIndices();
+            await fetchRealPrices();
+            setInterval(loadIndices,60000);
+            setInterval(fetchRealPrices,5*60*1000);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded',main);
+</script>
 </body>
 </html>

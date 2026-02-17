@@ -7,6 +7,9 @@ import feedparser
 from datetime import datetime, timedelta
 import threading
 import time
+import warnings
+warnings.filterwarnings("ignore")
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
@@ -37,39 +40,74 @@ def fetch_news():
         return []
 
 def fetch_stock_data(symbol):
-    """Get stock data for a symbol"""
     try:
-        # Add .NS for Indian stocks if not present
-        if not symbol.endswith('.NS') and not '.' in symbol:
+        if not symbol.endswith('.NS'):
             symbol += '.NS'
 
-        data = yf.download(symbol, period="1mo", progress=False)
+        data = yf.download(
+            symbol,
+            period="5d",
+            progress=False,
+            threads=False,
+            auto_adjust=True
+        )
 
-        if data.empty:
-            return {"dates": [], "prices": [], "current": 0}
 
+        if data is None or data.empty:
+            return {
+                "dates": [],
+                "prices": [],
+                "current": 0,
+                "change": 0,
+                "change_pct": 0,
+                "volume": 0
+            }
+
+        # 🔥 FIX for MultiIndex columns
         if isinstance(data.columns, pd.MultiIndex):
             data = data.xs(symbol, level=1, axis=1)
 
-        dates = data.index.strftime('%Y-%m-%d').tolist()
-        prices = data['Close'].astype(float).tolist() if 'Close' in data.columns else []
+        if 'Close' not in data.columns:
+            return {
+                "dates": [],
+                "prices": [],
+                "current": 0,
+                "change": 0,
+                "change_pct": 0,
+                "volume": 0
+            }
 
-        current_price = round(float(prices[-1]), 2) if prices else 0
-        prev_price = round(float(prices[-2]), 2) if len(prices) > 1 else current_price
+        close_series = data['Close']
+
+        prices = close_series.astype(float).values.tolist()
+        dates = data.index.strftime('%Y-%m-%d').tolist()
+
+        current_price = round(prices[-1], 2)
+        prev_price = round(prices[-2], 2) if len(prices) > 1 else current_price
+
         change = current_price - prev_price
         change_pct = (change / prev_price * 100) if prev_price != 0 else 0
 
         return {
-            "dates": dates[-30:],  # Last 30 days
-            "prices": prices[-30:],
+            "dates": dates,
+            "prices": prices,
             "current": current_price,
             "change": round(change, 2),
             "change_pct": round(change_pct, 2),
             "volume": int(data['Volume'].iloc[-1]) if 'Volume' in data.columns else 0
         }
+
     except Exception as e:
         print(f"Error fetching stock data for {symbol}: {e}")
-        return {"dates": [], "prices": [], "current": 0, "change": 0, "change_pct": 0, "volume": 0}
+        return {
+            "dates": [],
+            "prices": [],
+            "current": 0,
+            "change": 0,
+            "change_pct": 0,
+            "volume": 0
+        }
+
 
 def fetch_market_tables():
     """Get top gainers, losers, and most active stocks"""
@@ -137,8 +175,8 @@ def fetch_indices():
         try:
             data = yf.download(idx["symbol"], period="2d", progress=False)
             if not data.empty and len(data) > 0:
-                current = float(data['Close'].iloc[-1])
-                prev = float(data['Close'].iloc[-2]) if len(data) > 1 else current
+                current = data['Close'].iloc[-1].item()
+                prev = data['Close'].iloc[-2].item() if len(data) > 1 else current
                 idx["value"] = round(current, 2)
                 idx["change"] = round(((current - prev) / prev) * 100, 2)
         except Exception as e:
@@ -324,6 +362,75 @@ def stock_data(symbol):
             "status": "error",
             "message": str(e)
         }), 500
+
+
+@app.route('/api/stock/<symbol>/history')
+def stock_history(symbol):
+    try:
+        if not symbol.endswith('.NS'):
+            symbol += '.NS'
+
+        ticker = yf.Ticker(symbol)
+        chart = {}
+
+        # ===============================
+        # 1️⃣ INTRADAY CANDLESTICK (1D)
+        # ===============================
+        intraday = ticker.history(period="1d", interval="5m")
+
+        ohlc = []
+        for index, row in intraday.iterrows():
+            ohlc.append({
+                "x": index.strftime("%H:%M"),
+                "o": float(row["Open"]),
+                "h": float(row["High"]),
+                "l": float(row["Low"]),
+                "c": float(row["Close"])
+            })
+
+        chart["intraday"] = {
+            "ohlc": ohlc
+        }
+
+        # ===============================
+        # 6 MONTHS
+        # ===============================
+        hist_6m = ticker.history(period="6mo")
+        chart["6m"] = {
+            "labels": [str(i.date()) for i in hist_6m.index],
+            "closes": hist_6m["Close"].round(2).tolist()
+        }
+
+        # ===============================
+        # 1 YEAR
+        # ===============================
+        hist_1y = ticker.history(period="1y")
+        chart["1y"] = {
+            "labels": [str(i.date()) for i in hist_1y.index],
+            "closes": hist_1y["Close"].round(2).tolist()
+        }
+
+        # ===============================
+        # 5 YEARS
+        # ===============================
+        hist_5y = ticker.history(period="5y")
+        chart["5y"] = {
+            "labels": [str(i.date()) for i in hist_5y.index],
+            "closes": hist_5y["Close"].round(2).tolist()
+        }
+
+        return jsonify({
+            "status": "success",
+            "symbol": symbol.replace(".NS", ""),
+            "chart": chart
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
 
 @app.route('/api/search/<query>')
 def search_stocks(query):

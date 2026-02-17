@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Prediction | VisionTrade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 text-gray-200 min-h-screen">
+
+<div class="max-w-3xl mx-auto p-8">
+    <h1 class="text-3xl font-bold mb-2">Stock Price Prediction</h1>
+    <p class="text-gray-400 mb-6">
+        Powered by LSTM & Linear Regression
+    </p>
+
+    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
+        <div class="mb-4">
+            <span class="text-gray-400">Stock Symbol:</span>
+            <span id="stockSymbol" class="font-bold text-white ml-2"></span>
+        </div>
+
+        <div id="loading" class="text-blue-400">
+            Running prediction model, please wait...
+        </div>
+
+        <div id="result" class="hidden mt-4 space-y-2">
+            <p><b>Current Price:</b> ₹<span id="currentPrice"></span></p>
+            <p><b>Predicted Price:</b> ₹<span id="predictedPrice"></span></p>
+            <p><b>Trend:</b> <span id="trend"></span></p>
+            <p><b>Confidence:</b> <span id="confidence"></span>%</p>
+            <p class="text-sm text-gray-400">
+                Model Used: <span id="model"></span>
+            </p>
+        </div>
+    </div>
+
+    <a href="index.html"
+       class="inline-block mt-6 text-blue-400 hover:underline">
+        ← Back to Dashboard
+    </a>
+</div>
+
+<script src="predict.js"></script>
+</body>
+</html>

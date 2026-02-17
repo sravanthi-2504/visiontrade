@@ -1,1948 +1,646 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Investment Advisor | Live Market Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Vision Trade | Live Indian Market Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@3.3.0"></script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #3b82f6;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #8b5cf6;
-            --dark-bg: #0f172a;
-            --darker-bg: #0a0e17;
-            --card-bg: #1e293b;
-            --border: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-tertiary: #64748b;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--darker-bg);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo h1 {
-            color: var(--primary);
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo p {
-            color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 400;
-        }
-
-        .live-status {
-            display: flex;
-            gap: 25px;
-            align-items: center;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-secondary);
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .live-indicator {
-            width: 10px;
-            height: 10px;
-            background: var(--success);
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .nav-button {
-            background: linear-gradient(135deg, var(--primary), #2563eb);
-            color: white;
-            border: none;
-            padding: 12px 28px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .nav-button:hover {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
-        }
-
-        /* Market Stats */
-        .market-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--info));
-        }
-
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .stat-value {
-            font-size: 34px;
-            font-weight: 800;
-            font-family: 'Roboto Mono', monospace;
-            color: var(--text-primary);
-            margin-bottom: 5px;
-        }
-
-        .stat-change {
-            font-size: 15px;
-            font-family: 'Roboto Mono', monospace;
-            font-weight: 600;
-        }
-
-        .positive { color: var(--success); }
-        .negative { color: var(--danger); }
-
-        .volume-bar {
-            height: 4px;
-            background: rgba(100, 116, 139, 0.3);
-            border-radius: 2px;
-            margin-top: 12px;
-            overflow: hidden;
-        }
-
-        .volume-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--info));
-            border-radius: 2px;
-            transition: width 0.5s ease-out;
-        }
-
-        /* Main Grid */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        /* Charts Section */
-        .charts-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            color: var(--text-primary);
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .charts-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .chart-box {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 20px;
-            height: 300px;
-        }
-
-        .chart-box {
-            position: relative;
-        }
-
-        .chart-loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: var(--text-secondary);
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .chart-status {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 11px;
-            color: var(--text-secondary);
-            background: rgba(0, 0, 0, 0.3);
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
-
-        .chart-status.live {
-            color: var(--success);
-        }
-
-        .chart-status.delayed {
-            color: var(--warning);
-        }
-
-        /* Trending Stocks */
-        .trending-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-        }
-
-        .stocks-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .stock-item {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid transparent;
-            border-radius: 10px;
-            padding: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s;
-        }
-
-        .stock-item:hover {
-            background: rgba(30, 41, 59, 0.8);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .stock-info h4 {
-            color: var(--text-primary);
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .stock-info p {
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        .stock-price {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-primary);
-        }
-
-        /* Gainers & Losers */
-        .gainers-losers-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-        }
-
-        .performance-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-
-        .performance-box {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 20px;
-        }
-
-        .performance-title {
-            color: var(--text-primary);
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .gainers-list, .losers-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .gainer-item, .loser-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .gainer-item:hover, .loser-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(5px);
-        }
-
-        .stock-symbol {
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 15px;
-            font-family: 'Roboto Mono', monospace;
-        }
-
-        .stock-change {
-            font-family: 'Roboto Mono', monospace;
-            font-weight: 700;
-            font-size: 14px;
-        }
-
-        /* Right Panel */
-        .right-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        /* FII/DII Activity */
-        .institutional-activity {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-        }
-
-        .activity-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .activity-item {
-            background: rgba(30, 41, 59, 0.5);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 18px;
-            text-align: center;
-            transition: all 0.3s;
-        }
-
-        .activity-item:hover {
-            background: rgba(30, 41, 59, 0.8);
-            transform: translateY(-2px);
-        }
-
-        .activity-label {
-            color: var(--text-secondary);
-            font-size: 13px;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .activity-value {
-            font-size: 22px;
-            font-weight: 800;
-            font-family: 'Roboto Mono', monospace;
-        }
-
-        /* Market News */
-        .market-news {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-            max-height: 450px;
-            overflow-y: auto;
-        }
-
-        .news-list {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .news-item {
-            padding: 15px;
-            background: rgba(30, 41, 59, 0.5);
-            border-radius: 10px;
-            border-left: 4px solid var(--primary);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .news-item:hover {
-            background: rgba(30, 41, 59, 0.8);
-            transform: translateX(5px);
-        }
-
-        .news-time {
-            color: var(--primary);
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'Roboto Mono', monospace;
-        }
-
-        .news-headline {
-            color: var(--text-primary);
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .news-source {
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        /* Market Indicators */
-        .market-indicators {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 25px;
-        }
-
-        .indicators-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .indicator-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: rgba(30, 41, 59, 0.5);
-            border-radius: 8px;
-        }
-
-        .indicator-label {
-            color: var(--text-secondary);
-            font-size: 13px;
-            font-weight: 500;
-        }
-
-        .indicator-value {
-            color: var(--text-primary);
-            font-family: 'Roboto Mono', monospace;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        /* Footer */
-        .footer {
-            text-align: center;
-            padding: 30px 0;
-            color: var(--text-secondary);
-            font-size: 14px;
-            border-top: 1px solid var(--border);
-            margin-top: 40px;
-        }
-
-        /* Price Flashing Animations */
-        @keyframes flashGreen {
-            0% { background-color: transparent; }
-            50% { background-color: rgba(16, 185, 129, 0.3); }
-            100% { background-color: transparent; }
-        }
-
-        @keyframes flashRed {
-            0% { background-color: transparent; }
-            50% { background-color: rgba(239, 68, 68, 0.3); }
-            100% { background-color: transparent; }
-        }
-
-        .flash-green {
-            animation: flashGreen 0.8s ease-out;
-        }
-
-        .flash-red {
-            animation: flashRed 0.8s ease-out;
-        }
-
-        /* Time Display */
-        #liveTime {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 15px;
-            color: var(--primary);
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(30, 41, 59, 0.3);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(100, 116, 139, 0.5);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(100, 116, 139, 0.7);
-        }
-
-        /* Loading States */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(59, 130, 246, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
-
-            .stocks-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .market-stats {
-                grid-template-columns: 1fr;
-            }
-
-            .stocks-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .performance-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .activity-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .indicators-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header {
-                flex-direction: column;
-                gap: 20px;
-                text-align: center;
-            }
-
-            .live-status {
-                flex-direction: column;
-                gap: 15px;
-            }
-        }
+        :root{
+            --bg:#080c14;--bg2:#0d1320;--card:#111827;
+            --border:#1e2d45;--border2:#253552;
+            --accent:#3b82f6;--accent2:#6366f1;
+            --green:#10b981;--red:#ef4444;--amber:#f59e0b;
+            --txt1:#f1f5f9;--txt2:#94a3b8;--txt3:#475569;
+        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--txt1);min-height:100vh;overflow-x:hidden}
+        body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+
+        .wrap{max-width:1440px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+        /* HEADER */
+        header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:rgba(8,12,20,.88);backdrop-filter:blur(18px);margin:0 -24px}
+        .logo{display:flex;align-items:center;gap:12px}
+        .logo-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:17px;color:#fff}
+        .logo h1{font-size:22px;font-weight:700;letter-spacing:-.4px}
+        .logo h1 span{color:var(--accent)}
+        .logo-sub{font-size:12px;color:var(--txt3);margin-top:1px}
+        .hdr-right{display:flex;align-items:center;gap:18px}
+        .live-pill{display:flex;align-items:center;gap:7px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;color:var(--green)}
+        .ldot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+        .clock{font-family:'DM Mono',monospace;font-size:14px;color:var(--accent);padding:5px 12px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.18);border-radius:8px}
+        .nav-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 20px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:8px;transition:all .25s;font-family:'Space Grotesk',sans-serif}
+        .nav-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,130,246,.3)}
+
+        /* BACKEND STATUS */
+        .backend-status{display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 12px;border-radius:8px;border:1px solid;transition:all .3s}
+        .bs-ok{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25);color:var(--green)}
+        .bs-err{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);color:var(--red)}
+        .bs-loading{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25);color:var(--amber)}
+
+        /* TICKER */
+        .ticker-bar{background:var(--bg2);border-bottom:1px solid var(--border);overflow:hidden;height:36px;display:flex;align-items:center;position:relative}
+        .ticker-label{position:absolute;left:0;z-index:2;background:linear-gradient(135deg,var(--accent),var(--accent2));padding:0 14px;height:36px;display:flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:1px;white-space:nowrap;color:#fff}
+        .ticker-track{display:flex;animation:scroll 80s linear infinite;padding-left:110px}
+        @keyframes scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+        .ticker-item{display:flex;align-items:center;gap:8px;padding:0 20px;border-right:1px solid var(--border);white-space:nowrap;font-size:12px}
+        .t-sym{font-weight:700;color:var(--txt1)}
+        .t-price{font-family:'DM Mono',monospace;color:var(--txt2)}
+        .t-chg{font-family:'DM Mono',monospace;font-weight:600;font-size:11px}
+        .pos{color:var(--green)}.neg{color:var(--red)}
+
+        /* STATS GRID */
+        .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;position:relative;overflow:hidden;cursor:default;transition:border-color .3s,transform .3s}
+        .stat-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+        .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+        .sc-badge{position:absolute;top:16px;right:16px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+        .sc-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--txt3);text-transform:uppercase;margin-bottom:8px}
+        .sc-val{font-family:'DM Mono',monospace;font-size:30px;font-weight:500;color:var(--txt1);line-height:1.1;margin-bottom:4px}
+        .sc-chg{font-family:'DM Mono',monospace;font-size:14px;font-weight:600}
+        .sc-range{font-size:11px;color:var(--txt3);margin-top:6px}
+        .bar-wrap{height:3px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:12px;overflow:hidden}
+        .bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width 1s ease}
+
+        /* MAIN GRID */
+        .main-grid{display:grid;grid-template-columns:1fr 380px;gap:20px;margin-bottom:24px}
+        .sec{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:20px}
+        .sec-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:18px}
+        .sec-title i{color:var(--accent);font-size:14px}
+        .badge-sm{margin-left:auto;font-size:10px;font-weight:600;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:var(--accent);padding:2px 8px;border-radius:12px;letter-spacing:.5px}
+
+        /* CHARTS */
+        .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+        .chart-box{background:rgba(13,19,32,.7);border:1px solid var(--border);border-radius:10px;padding:16px;height:260px;position:relative;display:flex;flex-direction:column}
+        .chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-shrink:0}
+        .chart-name{font-size:13px;font-weight:700;color:var(--txt2)}
+        .chart-cur{font-family:'DM Mono',monospace;font-size:14px;font-weight:600}
+        .chart-inner{flex:1;position:relative;min-height:0}
+        .chart-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;color:var(--txt3);font-size:13px}
+        .spin{animation:spin .8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        /* STOCKS GRID */
+        .stocks-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .stock-card{background:rgba(13,19,32,.7);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;transition:all .25s;cursor:pointer}
+        .stock-card:hover{border-color:var(--accent);background:rgba(59,130,246,.05);transform:translateY(-1px)}
+        .s-sym{font-size:15px;font-weight:700}
+        .s-name{font-size:12px;color:var(--txt3);margin-top:2px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .s-price{font-family:'DM Mono',monospace;font-size:16px;font-weight:600;text-align:right}
+        .s-chg{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;margin-top:2px;text-align:right}
+
+        /* GAINERS/LOSERS */
+        .perf-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .perf-box{background:rgba(13,19,32,.6);border:1px solid var(--border);border-radius:10px;padding:16px}
+        .perf-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+        .perf-list{display:flex;flex-direction:column;gap:8px}
+        .perf-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:7px;transition:background .2s;cursor:pointer}
+        .perf-item:hover{background:rgba(255,255,255,.07)}
+        .perf-sym{font-family:'DM Mono',monospace;font-size:13px;font-weight:700}
+        .perf-price{font-family:'DM Mono',monospace;font-size:11px;color:var(--txt3)}
+        .perf-pct{font-family:'DM Mono',monospace;font-size:13px;font-weight:700}
+
+        /* RIGHT */
+        .right-col{display:flex;flex-direction:column;gap:20px}
+        .inst-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+        .inst-item{background:rgba(13,19,32,.6);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;transition:all .25s}
+        .inst-item:hover{border-color:var(--border2);transform:translateY(-1px)}
+        .inst-label{font-size:11px;font-weight:600;color:var(--txt3);letter-spacing:.3px;margin-bottom:6px}
+        .inst-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:600}
+        .news-list{display:flex;flex-direction:column;gap:10px;max-height:380px;overflow-y:auto;margin-top:4px}
+        .news-list::-webkit-scrollbar{width:4px}
+        .news-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+        .news-item{padding:12px 14px;background:rgba(13,19,32,.6);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;cursor:pointer;transition:all .2s}
+        .news-item:hover{background:rgba(59,130,246,.06);transform:translateX(3px)}
+        .news-time{font-size:11px;color:var(--accent);font-weight:600;font-family:'DM Mono',monospace;margin-bottom:4px}
+        .news-head{font-size:13px;font-weight:600;color:var(--txt1);line-height:1.4;margin-bottom:4px}
+        .news-src{font-size:11px;color:var(--txt3)}
+        .ind-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+        .ind-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(13,19,32,.6);border-radius:7px}
+        .ind-label{font-size:12px;color:var(--txt3);font-weight:500}
+        .ind-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:600}
+
+        /* ERROR BANNER */
+        .err-banner{
+            background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);
+            border-radius:10px;padding:14px 18px;margin:16px 0;display:none;
+            font-size:13px;color:var(--red);
+        }
+        .err-banner.show{display:flex;align-items:center;gap:10px}
+        .err-banner code{background:rgba(0,0,0,.4);padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;font-size:12px}
+
+        /* FLASH */
+        @keyframes flashG{0%{background:rgba(16,185,129,.2)}100%{background:transparent}}
+        @keyframes flashR{0%{background:rgba(239,68,68,.2)}100%{background:transparent}}
+        .fg{animation:flashG .7s ease-out}.fr{animation:flashR .7s ease-out}
+
+        /* SKELETON */
+        .skel{background:linear-gradient(90deg,#1e293b 25%,#263045 50%,#1e293b 75%);background-size:200% 100%;animation:sk 1.4s infinite;border-radius:4px;display:inline-block}
+        @keyframes sk{0%{background-position:200%}100%{background-position:-200%}}
+
+        footer{border-top:1px solid var(--border);padding:24px 0;text-align:center;color:var(--txt3);font-size:13px;line-height:1.9;margin-top:8px}
+
+        @media(max-width:1100px){.main-grid{grid-template-columns:1fr}}
+        @media(max-width:768px){.stats-grid,.charts-grid,.stocks-grid,.perf-grid,.inst-grid,.ind-grid{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
-<div class="container">
-    <!-- Header -->
-    <header class="header">
+<div class="wrap">
+    <header>
         <div class="logo">
-            <h1><i class="fas fa-chart-line"></i> VISION TRADE</h1>
-            <p>Live market insights • AI-powered stock analysis • Investment recommendations</p>
+            <div class="logo-mark"><i class="fas fa-chart-line"></i></div>
+            <div>
+                <h1>VISION <span>TRADE</span></h1>
+                <div class="logo-sub">Real-time Indian Market Intelligence</div>
+            </div>
         </div>
-        <div class="live-status">
-            <div class="status-item">
-                <div class="live-indicator"></div>
-                <span>LIVE MARKET</span>
-            </div>
-            <div class="status-item">
-                <i class="fas fa-clock"></i>
-                <span id="liveTime">15:30:45.782</span>
-            </div>
-            <a href="main-dashboard.html" class="nav-button">
-                <i class="fas fa-arrow-right"></i> Go to Dashboard
-            </a>
+        <div class="hdr-right">
+            <div class="backend-status bs-loading" id="beStatus"><i class="fas fa-circle-notch spin"></i><span>Connecting to backend…</span></div>
+            <div class="live-pill"><div class="ldot"></div>NSE LIVE</div>
+            <div class="clock" id="clock">--:--:--</div>
+            <a href="main-dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i>Dashboard</a>
         </div>
     </header>
+</div>
 
-    <!-- Market Stats -->
-    <div class="market-stats">
-        <div class="stat-card">
-            <div class="stat-label">NIFTY 50</div>
-            <div class="stat-value" id="niftyValue">22,212.70</div>
-            <div class="stat-change positive" id="niftyChange">+84.35 (+0.38%)</div>
-            <div class="volume-bar">
-                <div class="volume-fill" style="width: 75%"></div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">SENSEX</div>
-            <div class="stat-value" id="sensexValue">73,142.80</div>
-            <div class="stat-change positive" id="sensexChange">+276.50 (+0.38%)</div>
-            <div class="volume-bar">
-                <div class="volume-fill" style="width: 68%"></div>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">NIFTY 500</div>
-            <div class="stat-value" id="nifty500Value">18,635.25</div>
-            <div class="stat-change positive" id="nifty500Change">+182.75 (+0.99%)</div>
-            <div class="volume-bar">
-                <div class="volume-fill" style="width: 82%"></div>
-            </div>
-        </div>
-    </div>
+<div class="ticker-bar">
+    <div class="ticker-label">LIVE</div>
+    <div class="ticker-track" id="tickerTrack"><span style="padding:0 20px;color:var(--txt3);font-size:12px">Loading real prices…</span></div>
+</div>
 
-    <!-- Main Grid -->
-    <div class="main-grid">
-        <!-- Left Column -->
+<div class="wrap">
+
+    <!-- ERROR BANNER (shown if backend is down) -->
+    <div class="err-banner" id="errBanner">
+        <i class="fas fa-exclamation-triangle" style="font-size:16px;flex-shrink:0"></i>
         <div>
-            <!-- Charts Section -->
-            <div class="charts-section">
-                <div class="section-title">
-                    <i class="fas fa-chart-area"></i> Market Indices Today
-                </div>
-                <div class="charts-container">
+            <strong>Backend not running.</strong> Start it with:<br>
+            <code>cd backend &amp;&amp; pip install flask flask-cors yfinance pytz &amp;&amp; python app.py</code>
+            <br>Prices shown below are cached/simulated until backend is available.
+        </div>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="stats-grid">
+        <div class="stat-card" id="cardNifty">
+            <div class="sc-badge">NSE</div>
+            <div class="sc-label">NIFTY 50</div>
+            <div class="sc-val" id="niftyVal"><span class="skel" style="width:190px;height:30px"></span></div>
+            <div class="sc-chg" id="niftyChg">—</div>
+            <div class="sc-range" id="niftyRange">H: — &nbsp; L: —</div>
+            <div class="bar-wrap"><div class="bar-fill" id="niftyBar" style="width:60%"></div></div>
+        </div>
+        <div class="stat-card" id="cardSensex">
+            <div class="sc-badge">BSE</div>
+            <div class="sc-label">SENSEX</div>
+            <div class="sc-val" id="sensexVal"><span class="skel" style="width:190px;height:30px"></span></div>
+            <div class="sc-chg" id="sensexChg">—</div>
+            <div class="sc-range" id="sensexRange">H: — &nbsp; L: —</div>
+            <div class="bar-wrap"><div class="bar-fill" id="sensexBar" style="width:60%"></div></div>
+        </div>
+        <div class="stat-card" id="cardN500">
+            <div class="sc-badge">NSE</div>
+            <div class="sc-label">NIFTY 500</div>
+            <div class="sc-val" id="n500Val"><span class="skel" style="width:190px;height:30px"></span></div>
+            <div class="sc-chg" id="n500Chg">—</div>
+            <div class="sc-range" id="n500Range">H: — &nbsp; L: —</div>
+            <div class="bar-wrap"><div class="bar-fill" id="n500Bar" style="width:60%"></div></div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <div>
+            <!-- CHARTS -->
+            <div class="sec">
+                <div class="sec-title"><i class="fas fa-chart-area"></i>Intraday Chart — Real Data<span class="badge-sm">yfinance</span></div>
+                <div class="charts-grid">
                     <div class="chart-box">
-                        <canvas id="niftyChart"></canvas>
+                        <div class="chart-hdr">
+                            <span class="chart-name">NIFTY 50 (^NSEI)</span>
+                            <span class="chart-cur" id="niftyChartCur">—</span>
+                        </div>
+                        <div class="chart-inner">
+                            <div class="chart-placeholder" id="niftyPlaceholder"><i class="fas fa-circle-notch spin" style="font-size:22px"></i>Loading…</div>
+                            <canvas id="niftyCanvas" style="display:none;width:100%;height:100%"></canvas>
+                        </div>
                     </div>
                     <div class="chart-box">
-                        <canvas id="sensexChart"></canvas>
+                        <div class="chart-hdr">
+                            <span class="chart-name">SENSEX (^BSESN)</span>
+                            <span class="chart-cur" id="sensexChartCur">—</span>
+                        </div>
+                        <div class="chart-inner">
+                            <div class="chart-placeholder" id="sensexPlaceholder"><i class="fas fa-circle-notch spin" style="font-size:22px"></i>Loading…</div>
+                            <canvas id="sensexCanvas" style="display:none;width:100%;height:100%"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Trending Stocks -->
-            <div class="trending-section">
-                <div class="section-title">
-                    <i class="fas fa-fire"></i> Trending Stocks
-                </div>
-                <div class="stocks-grid" id="trendingStocks">
-                    <!-- Stocks will be loaded dynamically -->
+            <!-- TRENDING -->
+            <div class="sec">
+                <div class="sec-title"><i class="fas fa-fire"></i>Trending Stocks<span class="badge-sm">REAL PRICES</span></div>
+                <div class="stocks-grid" id="trendingGrid">
+                    <!-- skeleton -->
+                    <div class="stock-card"><div><div class="skel" style="width:80px;height:18px;margin-bottom:7px"></div><div class="skel" style="width:130px;height:13px"></div></div><div><div class="skel" style="width:80px;height:18px;margin-bottom:7px;margin-left:auto"></div><div class="skel" style="width:60px;height:13px;margin-left:auto"></div></div></div>
+                    <div class="stock-card"><div><div class="skel" style="width:80px;height:18px;margin-bottom:7px"></div><div class="skel" style="width:130px;height:13px"></div></div><div><div class="skel" style="width:80px;height:18px;margin-bottom:7px;margin-left:auto"></div><div class="skel" style="width:60px;height:13px;margin-left:auto"></div></div></div>
+                    <div class="stock-card"><div><div class="skel" style="width:80px;height:18px;margin-bottom:7px"></div><div class="skel" style="width:130px;height:13px"></div></div><div><div class="skel" style="width:80px;height:18px;margin-bottom:7px;margin-left:auto"></div><div class="skel" style="width:60px;height:13px;margin-left:auto"></div></div></div>
+                    <div class="stock-card"><div><div class="skel" style="width:80px;height:18px;margin-bottom:7px"></div><div class="skel" style="width:130px;height:13px"></div></div><div><div class="skel" style="width:80px;height:18px;margin-bottom:7px;margin-left:auto"></div><div class="skel" style="width:60px;height:13px;margin-left:auto"></div></div></div>
                 </div>
             </div>
 
-            <!-- Gainers & Losers -->
-            <div class="gainers-losers-section">
-                <div class="section-title">
-                    <i class="fas fa-trophy"></i> Top Performers Today
-                </div>
-                <div class="performance-grid">
-                    <div class="performance-box">
-                        <div class="performance-title positive">
-                            <i class="fas fa-arrow-up"></i> Top Gainers
-                        </div>
-                        <div class="gainers-list" id="gainersList">
-                            <!-- Gainers will be loaded dynamically -->
-                        </div>
+            <!-- GAINERS/LOSERS -->
+            <div class="sec">
+                <div class="sec-title"><i class="fas fa-trophy"></i>Top Performers<span class="badge-sm">REAL DATA</span></div>
+                <div class="perf-grid">
+                    <div class="perf-box">
+                        <div class="perf-title pos"><i class="fas fa-arrow-trend-up"></i>Top Gainers</div>
+                        <div class="perf-list" id="gainerList"><div class="skel" style="height:42px;margin-bottom:6px"></div><div class="skel" style="height:42px;margin-bottom:6px"></div><div class="skel" style="height:42px"></div></div>
                     </div>
-                    <div class="performance-box">
-                        <div class="performance-title negative">
-                            <i class="fas fa-arrow-down"></i> Top Losers
-                        </div>
-                        <div class="losers-list" id="losersList">
-                            <!-- Losers will be loaded dynamically -->
-                        </div>
+                    <div class="perf-box">
+                        <div class="perf-title neg"><i class="fas fa-arrow-trend-down"></i>Top Losers</div>
+                        <div class="perf-list" id="loserList"><div class="skel" style="height:42px;margin-bottom:6px"></div><div class="skel" style="height:42px;margin-bottom:6px"></div><div class="skel" style="height:42px"></div></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Right Column -->
-        <div class="right-panel">
-            <!-- FII/DII Activity -->
-            <div class="institutional-activity">
-                <div class="section-title">
-                    <i class="fas fa-university"></i> Institutional Activity
-                </div>
-                <div class="activity-grid">
-                    <div class="activity-item">
-                        <div class="activity-label">FII BUY (₹ Cr)</div>
-                        <div class="activity-value positive" id="fiiBuy">2,345.67</div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-label">FII SELL (₹ Cr)</div>
-                        <div class="activity-value negative" id="fiiSell">1,987.32</div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-label">DII BUY (₹ Cr)</div>
-                        <div class="activity-value positive" id="diiBuy">1,234.56</div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-label">DII SELL (₹ Cr)</div>
-                        <div class="activity-value negative" id="diiSell">876.54</div>
-                    </div>
+        <div class="right-col">
+            <!-- INSTITUTIONAL -->
+            <div class="sec">
+                <div class="sec-title"><i class="fas fa-university"></i>Institutional Activity</div>
+                <div class="inst-grid">
+                    <div class="inst-item"><div class="inst-label">FII BUY ₹Cr</div><div class="inst-val pos" id="fiiBuy">—</div></div>
+                    <div class="inst-item"><div class="inst-label">FII SELL ₹Cr</div><div class="inst-val neg" id="fiiSell">—</div></div>
+                    <div class="inst-item"><div class="inst-label">DII BUY ₹Cr</div><div class="inst-val pos" id="diiBuy">—</div></div>
+                    <div class="inst-item"><div class="inst-label">DII SELL ₹Cr</div><div class="inst-val neg" id="diiSell">—</div></div>
                 </div>
             </div>
 
-            <!-- Market News -->
-            <div class="market-news">
-                <div class="section-title">
-                    <i class="fas fa-newspaper"></i> Market News
-                </div>
-                <div class="news-list" id="newsList">
-                    <!-- News will be loaded dynamically from API -->
-                    <div class="news-item">
-                        <div class="news-time">
-                            <i class="fas fa-clock"></i>
-                            Loading real news...
-                        </div>
-                        <div class="news-headline">Fetching latest market updates from reliable sources</div>
-                        <div class="news-source">Smart Investment Advisor</div>
-                    </div>
-                </div>
+            <!-- NEWS -->
+            <div class="sec">
+                <div class="sec-title"><i class="fas fa-newspaper"></i>Market News<span class="badge-sm">RSS</span></div>
+                <div class="news-list" id="newsList"><div class="news-item"><div class="skel" style="height:14px;margin-bottom:6px"></div><div class="skel" style="height:36px;margin-bottom:6px"></div><div class="skel" style="height:12px;width:50%"></div></div><div class="news-item"><div class="skel" style="height:14px;margin-bottom:6px"></div><div class="skel" style="height:36px;margin-bottom:6px"></div><div class="skel" style="height:12px;width:50%"></div></div></div>
             </div>
 
-            <!-- Market Indicators -->
-            <div class="market-indicators">
-                <div class="section-title">
-                    <i class="fas fa-chart-bar"></i> Market Indicators
-                </div>
-                <div class="indicators-grid">
-                    <div class="indicator-item">
-                        <span class="indicator-label">Advances</span>
-                        <span class="indicator-value positive" id="advances">1,542</span>
-                    </div>
-                    <div class="indicator-item">
-                        <span class="indicator-label">Declines</span>
-                        <span class="indicator-value negative" id="declines">845</span>
-                    </div>
-                    <div class="indicator-item">
-                        <span class="indicator-label">Unchanged</span>
-                        <span class="indicator-value" id="unchanged">130</span>
-                    </div>
-                    <div class="indicator-item">
-                        <span class="indicator-label">Market Breadth</span>
-                        <span class="indicator-value positive" id="marketBreadth">1.82</span>
-                    </div>
-                    <div class="indicator-item">
-                        <span class="indicator-label">Volume (₹ Cr)</span>
-                        <span class="indicator-value" id="volume">45,678</span>
-                    </div>
-                    <div class="indicator-item">
-                        <span class="indicator-label">Turnover (₹ Cr)</span>
-                        <span class="indicator-value" id="turnover">1,23,456</span>
-                    </div>
+            <!-- INDICATORS -->
+            <div class="sec">
+                <div class="sec-title"><i class="fas fa-chart-bar"></i>Market Breadth</div>
+                <div class="ind-grid">
+                    <div class="ind-item"><span class="ind-label">Advances</span><span class="ind-val pos" id="advances">—</span></div>
+                    <div class="ind-item"><span class="ind-label">Declines</span><span class="ind-val neg" id="declines">—</span></div>
+                    <div class="ind-item"><span class="ind-label">Unchanged</span><span class="ind-val" id="unchanged">—</span></div>
+                    <div class="ind-item"><span class="ind-label">Breadth</span><span class="ind-val" id="breadth">—</span></div>
+                    <div class="ind-item"><span class="ind-label">Volume ₹Cr</span><span class="ind-val" id="volume">—</span></div>
+                    <div class="ind-item"><span class="ind-label">Turnover ₹Cr</span><span class="ind-val" id="turnover">—</span></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>© 2026 Smart Investment Advisor. Live market data updated in real-time.</p>
-        <p>AI-powered insights for smarter investment decisions. Data Source: NSE/BSE Feed & Financial APIs</p>
+    <footer>
+        <div>© 2026 Vision Trade — Real prices via <strong>yfinance</strong> (Yahoo Finance) through Flask backend</div>
+        <div>Backend: <code style="background:rgba(255,255,255,.06);padding:1px 7px;border-radius:4px;font-size:12px">http://127.0.0.1:5001</code> &nbsp;·&nbsp; Data may be 15 min delayed outside market hours</div>
     </footer>
 </div>
 
 <script>
-    // ============================================
-    // REAL-TIME MARKET SIMULATION ENGINE
-    // ============================================
-
-    // API Configuration
-    const NEWS_API_KEY = 'cc8f0a90ac9a4e6fb17024ef764d1c10'; // NewsAPI key (free tier)
-    const ALPHA_VANTAGE_API_KEY = 'demo'; // Alpha Vantage API key
-    const FINNHUB_API_KEY = 'ck8lplpr01qi6u4lb2t0ck8lplpr01qi6u4lb2tg'; // Finnhub API key
-
-    // Configuration
-    const MARKET_CONFIG = {
-        updateInterval: 3000, // Update every 3 seconds
-        priceVolatility: 0.02,
-        maxGainers: 5,
-        maxLosers: 5,
-        trendingStocksCount: 6
-    };
-
-    // Real Indian stocks data
-    const INDIAN_STOCKS = [
-        { symbol: 'RELIANCE', name: 'Reliance Industries', price: 2835.45, changePercent: 1.25 },
-        { symbol: 'TCS', name: 'Tata Consultancy', price: 3750.80, changePercent: -0.45 },
-        { symbol: 'HDFCBANK', name: 'HDFC Bank', price: 1650.30, changePercent: 0.85 },
-        { symbol: 'INFY', name: 'Infosys', price: 1520.75, changePercent: 0.35 },
-        { symbol: 'ICICIBANK', name: 'ICICI Bank', price: 1050.60, changePercent: 1.15 },
-        { symbol: 'HINDUNILVR', name: 'Hindustan Unilever', price: 2450.90, changePercent: -0.25 },
-        { symbol: 'ITC', name: 'ITC Ltd', price: 425.45, changePercent: 0.95 },
-        { symbol: 'SBIN', name: 'State Bank of India', price: 750.30, changePercent: 1.45 },
-        { symbol: 'BHARTIARTL', name: 'Bharti Airtel', price: 1215.45, changePercent: 0.65 },
-        { symbol: 'KOTAKBANK', name: 'Kotak Mahindra', price: 1765.90, changePercent: 0.55 },
-        { symbol: 'WIPRO', name: 'Wipro Ltd', price: 485.30, changePercent: -0.75 },
-        { symbol: 'AXISBANK', name: 'Axis Bank', price: 1085.60, changePercent: 0.95 }
-    ];
-
-    // Market indices data
-    let marketData = {
-        nifty: { value: 22212.70, change: 84.35, changePercent: 0.38 },
-        sensex: { value: 73142.80, change: 276.50, changePercent: 0.38 },
-        nifty500: { value: 18635.25, change: 182.75, changePercent: 0.99 },
-        lastUpdate: null,
-        updateCount: 0
-    };
-
-    // Chart instances
+    const API = 'http://127.0.0.1:5001';
     let charts = {};
 
-    // ============================================
-    // REAL NEWS API INTEGRATION
-    // ============================================
+    /* ── UTILS ──────────────────────────────────────────────────── */
+    const fi = (n,d=2) => isNaN(n)?'—':Number(n).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});
+    const sgn = n => n>=0 ? '+' : '';
+    const pct = n => `${sgn(n)}${Number(n).toFixed(2)}%`;
+    const cls = n => n>=0 ? 'pos' : 'neg';
 
-    async function fetchRealNews() {
-        try {
-            // 1. Indian Express Business RSS (Free, no API key)
-            const response = await fetch(
-                'https://api.rss2json.com/v1/api.json?rss_url=https://indianexpress.com/section/business/feed/'
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.items && data.items.length > 0) {
-                    return data.items.map(item => ({
-                        time: new Date(item.pubDate).toLocaleTimeString('en-IN', { hour12: false }),
-                        headline: item.title,
-                        source: 'Indian Express',
-                        url: item.link,
-                        description: item.description
-                    })).slice(0, 10);
-                }
-            }
-        } catch (error) {
-            console.warn('Indian Express RSS failed:', error);
-        }
-
-        try {
-            // 2. Business Standard RSS
-            const response = await fetch(
-                'https://api.rss2json.com/v1/api.json?rss_url=http://www.business-standard.com/rss/home_page_top_stories.rss'
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.items && data.items.length > 0) {
-                    return data.items.map(item => ({
-                        time: new Date(item.pubDate).toLocaleTimeString('en-IN', { hour12: false }),
-                        headline: item.title,
-                        source: 'Business Standard',
-                        url: item.link,
-                        description: item.description
-                    })).slice(0, 10);
-                }
-            }
-        } catch (error) {
-            console.warn('Business Standard RSS failed:', error);
-        }
-
-        try {
-            // 3. Financial Express RSS
-            const response = await fetch(
-                'https://api.rss2json.com/v1/api.json?rss_url=https://www.financialexpress.com/feed/'
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.items && data.items.length > 0) {
-                    return data.items.map(item => ({
-                        time: new Date(item.pubDate).toLocaleTimeString('en-IN', { hour12: false }),
-                        headline: item.title,
-                        source: 'Financial Express',
-                        url: item.link,
-                        description: item.description
-                    })).slice(0, 10);
-                }
-            }
-        } catch (error) {
-            console.warn('Financial Express RSS failed:', error);
-        }
-
-        // If all fails, return simulated news
-        return getSimulatedNews();
+    function flash(el, dir){
+        el.classList.remove('fg','fr');
+        void el.offsetWidth;
+        el.classList.add(dir>=0?'fg':'fr');
     }
 
-    function getSimulatedNews() {
-        const headlines = [
-            'FIIs turn net buyers in Indian equities, invest ₹2,345 crore',
-            'RBI likely to maintain status quo in February policy meeting',
-            'Reliance announces major expansion in renewable energy sector',
-            'IT stocks under pressure ahead of US Fed meeting minutes',
-            'Bank Nifty hits fresh record high, up 0.39% for the day',
-            'Auto sales show strong growth in January, Maruti leads',
-            'Pharma sector gains as USFDA approvals boost sentiment',
-            'Gold prices edge lower as dollar strengthens against rupee',
-            'Market breadth positive with 3:2 advance-decline ratio',
-            'Rupee trades range-bound against US dollar'
-        ];
-
-        const sources = ['Reuters', 'Bloomberg', 'ET Markets', 'Moneycontrol', 'CNBC TV18'];
-
-        return headlines.map((headline, index) => ({
-            time: new Date(Date.now() - index * 600000).toLocaleTimeString('en-IN', { hour12: false }),
-            headline: headline,
-            source: sources[index % sources.length],
-            url: '#'
-        }));
-    }
-
-    async function loadMarketNews() {
-        const newsContainer = document.getElementById('newsList');
-
-        try {
-            const news = await fetchRealNews();
-            newsContainer.innerHTML = '';
-
-            news.forEach(item => {
-                const newsItem = document.createElement('div');
-                newsItem.className = 'news-item';
-                newsItem.onclick = () => window.open(item.url, '_blank');
-                newsItem.innerHTML = `
-                        <div class="news-time">
-                            <i class="fas fa-clock"></i>
-                            ${item.time}
-                        </div>
-                        <div class="news-headline">${item.headline}</div>
-                        <div class="news-source">${item.source}</div>
-                    `;
-                newsContainer.appendChild(newsItem);
-            });
-        } catch (error) {
-            console.error('Failed to load news:', error);
-            // Load simulated news on error
-            const simulatedNews = getSimulatedNews();
-            newsContainer.innerHTML = '';
-            simulatedNews.forEach(item => {
-                const newsItem = document.createElement('div');
-                newsItem.className = 'news-item';
-                newsItem.innerHTML = `
-                        <div class="news-time">
-                            <i class="fas fa-clock"></i>
-                            ${item.time}
-                        </div>
-                        <div class="news-headline">${item.headline}</div>
-                        <div class="news-source">${item.source}</div>
-                    `;
-                newsContainer.appendChild(newsItem);
-            });
-        }
-    }
-
-    // ============================================
-    // UTILITY FUNCTIONS
-    // ============================================
-
-    function formatIndianNumber(num) {
-        return num.toLocaleString('en-IN', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    }
-
-    function generatePriceMovement(basePrice, volatility = 0.02) {
-        const changePercent = (Math.random() - 0.5) * volatility * 2;
-        const newPrice = basePrice * (1 + changePercent / 100);
-        return {
-            price: Math.round(newPrice * 100) / 100,
-            changePercent: changePercent,
-            change: newPrice - basePrice
-        };
-    }
-
-    function updateLiveTime() {
+    /* ── CLOCK ──────────────────────────────────────────────────── */
+    setInterval(()=>{
         const now = new Date();
-        const timeString = now.toLocaleTimeString('en-IN', {
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        }) + '.' + now.getMilliseconds().toString().padStart(3, '0');
+        document.getElementById('clock').textContent =
+            now.toLocaleTimeString('en-IN',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'})+
+            '.'+String(now.getMilliseconds()).padStart(3,'0');
+    },100);
 
-        document.getElementById('liveTime').textContent = timeString;
-        marketData.lastUpdate = now;
+    /* ── BACKEND HEALTH CHECK ───────────────────────────────────── */
+    async function checkBackend(){
+        const el = document.getElementById('beStatus');
+        try{
+            const r = await fetch(`${API}/api/health`,{signal:AbortSignal.timeout(3000)});
+            if(r.ok){
+                el.className='backend-status bs-ok';
+                el.innerHTML='<i class="fas fa-check-circle"></i><span>Backend connected</span>';
+                document.getElementById('errBanner').classList.remove('show');
+                return true;
+            }
+        }catch(e){}
+        el.className='backend-status bs-err';
+        el.innerHTML='<i class="fas fa-times-circle"></i><span>Backend offline</span>';
+        document.getElementById('errBanner').classList.add('show');
+        return false;
     }
 
-    // ============================================
-    // CHART INITIALIZATION
-    // ============================================
+    /* ── INDEX LOADER ───────────────────────────────────────────── */
+    const INDEX_CFG = [
+        {sym:'^NSEI',  valId:'niftyVal',  chgId:'niftyChg',  rangeId:'niftyRange',  barId:'niftyBar',  curId:'niftyChartCur',  canvas:'niftyCanvas',  ph:'niftyPlaceholder',  color:'rgb(59,130,246)' },
+        {sym:'^BSESN', valId:'sensexVal', chgId:'sensexChg', rangeId:'sensexRange', barId:'sensexBar', curId:'sensexChartCur', canvas:'sensexCanvas', ph:'sensexPlaceholder', color:'rgb(16,185,129)' },
+        {sym:'^CRSLDX',valId:'n500Val',   chgId:'n500Chg',   rangeId:'n500Range',   barId:'n500Bar',   curId:null,            canvas:null,           ph:null,               color:null              },
+    ];
 
-    function initializeCharts() {
-        const niftyCtx = document.getElementById('niftyChart').getContext('2d');
-        const sensexCtx = document.getElementById('sensexChart').getContext('2d');
+    async function loadIndex(cfg){
+        try{
+            const r = await fetch(`${API}/api/index/${encodeURIComponent(cfg.sym)}`,{signal:AbortSignal.timeout(8000)});
+            if(!r.ok) throw new Error(`HTTP ${r.status}`);
+            const d = await r.json();
+            if(d.status !== 'success') throw new Error(d.message||'bad status');
 
-        // Generate time labels for the day
-        const timeLabels = [];
-        for (let i = 9; i <= 15; i++) {
-            timeLabels.push(`${i}:00`);
+            const valEl = document.getElementById(cfg.valId);
+            const prev  = parseFloat(valEl.dataset.prev||0);
+            valEl.dataset.prev = d.current;
+
+            valEl.innerHTML = `₹${fi(d.current)}`;
+            valEl.className = `sc-val ${cls(d.change)}`;
+            if(prev && prev !== d.current) flash(valEl, d.change);
+
+            document.getElementById(cfg.chgId).innerHTML = `${sgn(d.change)}₹${fi(d.change)} (${pct(d.changePercent)})`;
+            document.getElementById(cfg.chgId).className = `sc-chg ${cls(d.change)}`;
+
+            document.getElementById(cfg.rangeId).textContent = `H: ₹${fi(d.high)} &nbsp; L: ₹${fi(d.low)}`;
+
+            if(d.high && d.low && d.high !== d.low){
+                const pos = ((d.current-d.low)/(d.high-d.low)*100).toFixed(1);
+                document.getElementById(cfg.barId).style.width = Math.max(5,Math.min(100,pos))+'%';
+            }
+
+            if(cfg.curId){
+                const ce = document.getElementById(cfg.curId);
+                ce.textContent = `₹${fi(d.current)}`;
+                ce.className = `chart-cur ${cls(d.change)}`;
+            }
+
+            // Draw chart if first load
+            if(cfg.canvas && d.chart?.labels?.length && !charts[cfg.canvas]){
+                drawChart(cfg.canvas, cfg.ph, d.chart.labels, d.chart.values, cfg.color);
+            }
+        } catch(e){
+            console.warn(`Index ${cfg.sym} failed:`, e.message);
         }
+    }
 
-        // NIFTY Chart
-        charts.nifty = new Chart(niftyCtx, {
-            type: 'line',
-            data: {
-                labels: timeLabels,
-                datasets: [{
-                    label: 'NIFTY 50',
-                    data: generateChartData(22212, 22300, timeLabels.length),
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 5
-                }]
+    function drawChart(canvasId, phId, labels, values, color){
+        const ph = document.getElementById(phId);
+        const canvas = document.getElementById(canvasId);
+        if(!ph||!canvas) return;
+        ph.style.display='none';
+        canvas.style.display='block';
+
+        if(charts[canvasId]) charts[canvasId].destroy();
+
+        const ctx = canvas.getContext('2d');
+        const grad = ctx.createLinearGradient(0,0,0,200);
+        grad.addColorStop(0, color.replace('rgb(','rgba(').replace(')',', 0.25)'));
+        grad.addColorStop(1, color.replace('rgb(','rgba(').replace(')',', 0)'));
+
+        charts[canvasId] = new Chart(ctx,{
+            type:'line',
+            data:{
+                labels,
+                datasets:[{data:values,borderColor:color,backgroundColor:grad,borderWidth:2,fill:true,tension:.4,pointRadius:0,pointHoverRadius:5}]
             },
-            options: getChartOptions('NIFTY 50')
-        });
-
-        // SENSEX Chart
-        charts.sensex = new Chart(sensexCtx, {
-            type: 'line',
-            data: {
-                labels: timeLabels,
-                datasets: [{
-                    label: 'SENSEX',
-                    data: generateChartData(73142, 73500, timeLabels.length),
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0,
-                    pointHoverRadius: 5
-                }]
-            },
-            options: getChartOptions('SENSEX')
-        });
-    }
-
-    // Replace the entire chart initialization and update functions:
-
-    // REAL Chart Data Configuration
-    const CHART_CONFIG = {
-        updateInterval: 60000, // Update every 60 seconds
-        timeFrame: '1d', // 1 day
-        interval: '5m' // 5 minute intervals
-    };
-
-    // Real stock symbols
-    const REAL_INDICES = {
-        nifty: '^NSEI',
-        sensex: '^BSESN',
-        nifty500: '^CRSLDX'
-    };
-
-    async function fetchRealChartData(symbol, period = '1d', interval = '5m') {
-        try {
-            // Method 1: Yahoo Finance via RapidAPI (More reliable)
-            const response = await fetch(
-                `https://yahoo-finance127.p.rapidapi.com/historic/${symbol}/${period}/${interval}`,
-                {
-                    headers: {
-                        'X-RapidAPI-Key': 'a47f9b2a40msh3b5f10e406a56eep139de0jsnba23397a7f2d',
-                        'X-RapidAPI-Host': 'yahoo-finance127.p.rapidapi.com'
-                    }
-                }
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.timestamp && data.indicators) {
-                    const quotes = data.indicators.quote[0];
-                    const timestamps = data.timestamp;
-
-                    // Process the data
-                    const chartData = [];
-                    const labels = [];
-
-                    for (let i = 0; i < timestamps.length; i++) {
-                        if (quotes.close[i]) {
-                            chartData.push(quotes.close[i]);
-                            const date = new Date(timestamps[i] * 1000);
-                            labels.push(date.toLocaleTimeString('en-IN', {
-                                hour12: false,
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }));
-                        }
-                    }
-
-                    return { data: chartData, labels: labels };
-                }
-            }
-        } catch (error) {
-            console.warn(`RapidAPI failed for ${symbol}:`, error);
-        }
-
-        try {
-            // Method 2: Direct Yahoo Finance API (Alternative)
-            const response = await fetch(
-                `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=${interval}&range=${period}`
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                const result = data.chart.result[0];
-                const quotes = result.indicators.quote[0];
-                const timestamps = result.timestamp;
-
-                const chartData = [];
-                const labels = [];
-
-                for (let i = 0; i < timestamps.length; i++) {
-                    if (quotes.close[i]) {
-                        chartData.push(quotes.close[i]);
-                        const date = new Date(timestamps[i] * 1000);
-                        labels.push(date.toLocaleTimeString('en-IN', {
-                            hour12: false,
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        }));
-                    }
-                }
-
-                return { data: chartData, labels: labels };
-            }
-        } catch (error) {
-            console.warn(`Yahoo API failed for ${symbol}:`, error);
-        }
-
-        // Fallback to simulated data
-        return generateSimulatedChartData(symbol);
-    }
-
-    function generateSimulatedChartData(symbol) {
-        // Base values for simulation
-        const baseValues = {
-            '^NSEI': { min: 22000, max: 22500 },
-            '^BSESN': { min: 73000, max: 74000 },
-            '^CRSLDX': { min: 18500, max: 19000 }
-        };
-
-        const base = baseValues[symbol] || { min: 10000, max: 11000 };
-        const timeLabels = [];
-        const data = [];
-
-        // Generate data for trading hours (9:15 to 15:30)
-        let current = base.min + Math.random() * (base.max - base.min) * 0.1;
-
-        for (let hour = 9; hour <= 15; hour++) {
-            for (let minute = 15; minute <= 55; minute += 5) {
-                if (hour === 15 && minute > 30) break;
-
-                timeLabels.push(`${hour}:${minute.toString().padStart(2, '0')}`);
-                data.push(current);
-
-                // Realistic price movement
-                const change = (Math.random() - 0.5) * (base.max - base.min) * 0.001;
-                current += change;
-                current = Math.max(base.min * 0.99, Math.min(base.max * 1.01, current));
-            }
-        }
-
-        return { data: data, labels: timeLabels };
-    }
-
-    async function initializeRealCharts() {
-        try {
-            // Fetch real data for both charts
-            const niftyData = await fetchRealChartData(REAL_INDICES.nifty, CHART_CONFIG.timeFrame, CHART_CONFIG.interval);
-            const sensexData = await fetchRealChartData(REAL_INDICES.sensex, CHART_CONFIG.timeFrame, CHART_CONFIG.interval);
-
-            // Initialize NIFTY Chart
-            const niftyCtx = document.getElementById('niftyChart').getContext('2d');
-            charts.nifty = new Chart(niftyCtx, {
-                type: 'line',
-                data: {
-                    labels: niftyData.labels,
-                    datasets: [{
-                        label: 'NIFTY 50',
-                        data: niftyData.data,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        pointHoverRadius: 5
-                    }]
+            options:{
+                responsive:true,maintainAspectRatio:false,animation:{duration:800},
+                plugins:{
+                    legend:{display:false},
+                    tooltip:{mode:'index',intersect:false,backgroundColor:'rgba(13,19,32,.95)',
+                        titleColor:'#94a3b8',bodyColor:'#f1f5f9',borderColor:'#1e2d45',borderWidth:1,
+                        callbacks:{label:c=>`₹${fi(c.parsed.y)}`}}
                 },
-                options: getRealChartOptions('NIFTY 50')
-            });
-
-            // Initialize SENSEX Chart
-            const sensexCtx = document.getElementById('sensexChart').getContext('2d');
-            charts.sensex = new Chart(sensexCtx, {
-                type: 'line',
-                data: {
-                    labels: sensexData.labels,
-                    datasets: [{
-                        label: 'SENSEX',
-                        data: sensexData.data,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        pointHoverRadius: 5
-                    }]
+                scales:{
+                    x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#475569',maxTicksLimit:8,font:{size:11}}},
+                    y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#475569',font:{size:11},callback:v=>`₹${(v/1000).toFixed(1)}K`},position:'right'}
                 },
-                options: getRealChartOptions('SENSEX')
-            });
-
-            console.log('✅ Real charts initialized with live data');
-        } catch (error) {
-            console.error('Failed to initialize real charts:', error);
-            // Fallback to simulated charts
-            initializeSimulatedCharts();
-        }
-    }
-
-    function getRealChartOptions(title) {
-        return {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: {
-                duration: 1000,
-                easing: 'easeOutQuart'
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                    titleColor: '#f1f5f9',
-                    bodyColor: '#cbd5e1',
-                    borderColor: '#1e293b',
-                    borderWidth: 1,
-                    callbacks: {
-                        label: function(context) {
-                            return `${title}: ₹${context.parsed.y.toLocaleString('en-IN', {minimumFractionDigits: 2})}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#94a3b8',
-                        maxTicksLimit: 8
-                    }
-                },
-                y: {
-                    grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                    },
-                    ticks: {
-                        color: '#94a3b8',
-                        callback: function(value) {
-                            return '₹' + value.toLocaleString('en-IN');
-                        }
-                    }
-                }
-            },
-            interaction: {
-                intersect: false,
-                mode: 'index'
-            }
-        };
-    }
-
-    async function updateRealCharts() {
-        if (!charts.nifty || !charts.sensex) return;
-
-        try {
-            // Fetch latest data
-            const niftyData = await fetchRealChartData(REAL_INDICES.nifty, '1d', '5m');
-            const sensexData = await fetchRealChartData(REAL_INDICES.sensex, '1d', '5m');
-
-            // Update NIFTY chart
-            if (niftyData.data.length > 0) {
-                charts.nifty.data.labels = niftyData.labels;
-                charts.nifty.data.datasets[0].data = niftyData.data;
-                charts.nifty.update('none');
-            }
-
-            // Update SENSEX chart
-            if (sensexData.data.length > 0) {
-                charts.sensex.data.labels = sensexData.labels;
-                charts.sensex.data.datasets[0].data = sensexData.data;
-                charts.sensex.update('none');
-            }
-
-            // Update market stats with real data
-            updateRealMarketStats(niftyData.data, sensexData.data);
-
-        } catch (error) {
-            console.warn('Failed to update real charts:', error);
-            // Fallback to simulated updates
-            updateSimulatedCharts();
-        }
-    }
-
-    function updateRealMarketStats(niftyData, sensexData) {
-        if (niftyData && niftyData.length > 0) {
-            const currentNifty = niftyData[niftyData.length - 1];
-            const previousNifty = niftyData[0];
-            const niftyChange = currentNifty - previousNifty;
-            const niftyChangePercent = (niftyChange / previousNifty) * 100;
-
-            document.getElementById('niftyValue').textContent = currentNifty.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-            document.getElementById('niftyChange').textContent =
-                `${niftyChange >= 0 ? '+' : ''}${niftyChange.toFixed(2)} (${niftyChange >= 0 ? '+' : ''}${niftyChangePercent.toFixed(2)}%)`;
-            document.getElementById('niftyChange').className = `stat-change ${niftyChange >= 0 ? 'positive' : 'negative'}`;
-        }
-
-        if (sensexData && sensexData.length > 0) {
-            const currentSensex = sensexData[sensexData.length - 1];
-            const previousSensex = sensexData[0];
-            const sensexChange = currentSensex - previousSensex;
-            const sensexChangePercent = (sensexChange / previousSensex) * 100;
-
-            document.getElementById('sensexValue').textContent = currentSensex.toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-            document.getElementById('sensexChange').textContent =
-                `${sensexChange >= 0 ? '+' : ''}${sensexChange.toFixed(2)} (${sensexChange >= 0 ? '+' : ''}${sensexChangePercent.toFixed(2)}%)`;
-            document.getElementById('sensexChange').className = `stat-change ${sensexChange >= 0 ? 'positive' : 'negative'}`;
-        }
-    }
-
-
-    // ============================================
-    // MARKET INDICES UPDATES
-    // ============================================
-
-    function updateMarketIndices() {
-        // Update NIFTY 50
-        const niftyMovement = generatePriceMovement(marketData.nifty.value, 0.01);
-        marketData.nifty.value = niftyMovement.price;
-        marketData.nifty.change += niftyMovement.change;
-        marketData.nifty.changePercent = (marketData.nifty.change / (marketData.nifty.value - marketData.nifty.change)) * 100;
-
-        updateStatDisplay('niftyValue', marketData.nifty.value);
-        updateStatChange('niftyChange', marketData.nifty.change, marketData.nifty.changePercent);
-
-        // Update SENSEX
-        const sensexMovement = generatePriceMovement(marketData.sensex.value, 0.01);
-        marketData.sensex.value = sensexMovement.price;
-        marketData.sensex.change += sensexMovement.change;
-        marketData.sensex.changePercent = (marketData.sensex.change / (marketData.sensex.value - marketData.sensex.change)) * 100;
-
-        updateStatDisplay('sensexValue', marketData.sensex.value);
-        updateStatChange('sensexChange', marketData.sensex.change, marketData.sensex.changePercent);
-
-        // Update NIFTY 500
-        const nifty500Movement = generatePriceMovement(marketData.nifty500.value, 0.015);
-        marketData.nifty500.value = nifty500Movement.price;
-        marketData.nifty500.change += nifty500Movement.change;
-        marketData.nifty500.changePercent = (marketData.nifty500.change / (marketData.nifty500.value - marketData.nifty500.change)) * 100;
-
-        updateStatDisplay('nifty500Value', marketData.nifty500.value);
-        updateStatChange('nifty500Change', marketData.nifty500.change, marketData.nifty500.changePercent);
-    }
-
-    function updateStatDisplay(elementId, newValue) {
-        const element = document.getElementById(elementId);
-        if (!element) return;
-
-        const oldValue = parseFloat(element.textContent.replace(/,/g, ''));
-
-        // Add flashing effect
-        if (newValue > oldValue) {
-            element.classList.add('flash-green');
-            setTimeout(() => element.classList.remove('flash-green'), 800);
-        } else if (newValue < oldValue) {
-            element.classList.add('flash-red');
-            setTimeout(() => element.classList.remove('flash-red'), 800);
-        }
-
-        element.textContent = formatIndianNumber(newValue);
-    }
-
-    function updateStatChange(elementId, change, changePercent) {
-        const element = document.getElementById(elementId);
-        if (!element) return;
-
-        const isPositive = change >= 0;
-        element.textContent = `${isPositive ? '+' : ''}${change.toFixed(2)} (${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)`;
-        element.className = `stat-change ${isPositive ? 'positive' : 'negative'}`;
-    }
-
-    // ============================================
-    // TRENDING STOCKS UPDATES
-    // ============================================
-
-    function updateTrendingStocks() {
-        const container = document.getElementById('trendingStocks');
-        if (!container) return;
-
-        // Update prices
-        INDIAN_STOCKS.forEach(stock => {
-            const movement = generatePriceMovement(stock.price, 0.05);
-            stock.price = movement.price;
-            stock.changePercent += movement.changePercent;
-        });
-
-        // Sort by absolute change (most trending)
-        const trending = [...INDIAN_STOCKS]
-            .sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent))
-            .slice(0, MARKET_CONFIG.trendingStocksCount);
-
-        // Update display
-        container.innerHTML = '';
-        trending.forEach(stock => {
-            const stockElement = document.createElement('div');
-            stockElement.className = 'stock-item';
-            stockElement.innerHTML = `
-                    <div class="stock-info">
-                        <h4>${stock.symbol}</h4>
-                        <p>${stock.name}</p>
-                    </div>
-                    <div class="stock-price">
-                        ₹${formatIndianNumber(stock.price)}
-                        <div class="stat-change ${stock.changePercent >= 0 ? 'positive' : 'negative'}">
-                            ${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%
-                        </div>
-                    </div>
-                `;
-            container.appendChild(stockElement);
-        });
-
-        updateGainersLosers();
-    }
-
-    function updateGainersLosers() {
-        // Sort stocks by performance
-        const sortedStocks = [...INDIAN_STOCKS].sort((a, b) => b.changePercent - a.changePercent);
-
-        // Get top gainers and losers
-        const gainers = sortedStocks.slice(0, MARKET_CONFIG.maxGainers);
-        const losers = sortedStocks.slice(-MARKET_CONFIG.maxLosers).reverse();
-
-        // Update gainers list
-        const gainersList = document.getElementById('gainersList');
-        if (gainersList) {
-            gainersList.innerHTML = '';
-            gainers.forEach(stock => {
-                const item = document.createElement('div');
-                item.className = 'gainer-item';
-                item.innerHTML = `
-                        <span class="stock-symbol">${stock.symbol}</span>
-                        <span class="stock-change positive">+${stock.changePercent.toFixed(2)}%</span>
-                    `;
-                gainersList.appendChild(item);
-            });
-        }
-
-        // Update losers list
-        const losersList = document.getElementById('losersList');
-        if (losersList) {
-            losersList.innerHTML = '';
-            losers.forEach(stock => {
-                const item = document.createElement('div');
-                item.className = 'loser-item';
-                item.innerHTML = `
-                        <span class="stock-symbol">${stock.symbol}</span>
-                        <span class="stock-change negative">${stock.changePercent.toFixed(2)}%</span>
-                    `;
-                losersList.appendChild(item);
-            });
-        }
-    }
-
-    // ============================================
-    // INSTITUTIONAL ACTIVITY UPDATES
-    // ============================================
-
-    function updateInstitutionalActivity() {
-        const updates = {
-            'fiiBuy': { current: 2345.67, maxChange: 50 },
-            'fiiSell': { current: 1987.32, maxChange: 50 },
-            'diiBuy': { current: 1234.56, maxChange: 30 },
-            'diiSell': { current: 876.54, maxChange: 30 }
-        };
-
-        Object.entries(updates).forEach(([id, data]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                const change = (Math.random() - 0.5) * data.maxChange;
-                const newValue = Math.max(0, data.current + change);
-
-                // Update display with animation
-                if (newValue > parseFloat(element.textContent.replace(/,/g, ''))) {
-                    element.classList.add('flash-green');
-                    setTimeout(() => element.classList.remove('flash-green'), 800);
-                } else if (newValue < parseFloat(element.textContent.replace(/,/g, ''))) {
-                    element.classList.add('flash-red');
-                    setTimeout(() => element.classList.remove('flash-red'), 800);
-                }
-
-                element.textContent = formatIndianNumber(newValue);
-                updates[id].current = newValue;
+                interaction:{mode:'index',intersect:false}
             }
         });
     }
 
-    // ============================================
-    // MARKET INDICATORS UPDATES
-    // ============================================
+    /* ── STOCK QUOTES ───────────────────────────────────────────── */
+    const WATCH = [
+        {sym:'RELIANCE',  name:'Reliance Industries'},
+        {sym:'TCS',       name:'Tata Consultancy'},
+        {sym:'HDFCBANK',  name:'HDFC Bank'},
+        {sym:'INFY',      name:'Infosys'},
+        {sym:'ICICIBANK', name:'ICICI Bank'},
+        {sym:'ITC',       name:'ITC Ltd'},
+        {sym:'SBIN',      name:'State Bank'},
+        {sym:'WIPRO',     name:'Wipro Ltd'},
+        {sym:'BAJFINANCE',name:'Bajaj Finance'},
+        {sym:'TATASTEEL', name:'Tata Steel'},
+        {sym:'HCLTECH',   name:'HCL Tech'},
+        {sym:'CIPLA',     name:'Cipla Ltd'},
+        {sym:'VEDL',      name:'Vedanta Ltd'},
+        {sym:'LT',        name:'Larsen & Toubro'},
+        {sym:'MARUTI',    name:'Maruti Suzuki'},
+        {sym:'SUNPHARMA', name:'Sun Pharma'},
+    ];
 
-    function updateMarketIndicators() {
-        const indicators = {
-            'advances': { current: 1542, min: 1400, max: 1700 },
-            'declines': { current: 845, min: 700, max: 950 },
-            'unchanged': { current: 130, min: 100, max: 160 },
-            'marketBreadth': { current: 1.82, min: 1.5, max: 2.2 },
-            'volume': { current: 45678, min: 40000, max: 50000 },
-            'turnover': { current: 123456, min: 110000, max: 130000 }
-        };
-
-        Object.entries(indicators).forEach(([id, data]) => {
-            const element = document.getElementById(id);
-            if (element) {
-                const change = (Math.random() - 0.5) * (data.max - data.min) * 0.1;
-                const newValue = Math.max(data.min, Math.min(data.max, data.current + change));
-
-                element.textContent = formatIndianNumber(newValue);
-                indicators[id].current = newValue;
+    async function loadStocks(){
+        const results = await Promise.all(WATCH.map(async w=>{
+            try{
+                const r = await fetch(`${API}/api/stock/${w.sym}`,{signal:AbortSignal.timeout(8000)});
+                if(!r.ok) throw new Error();
+                const d = await r.json();
+                if(d.status!=='success') throw new Error();
+                return {...w, price:d.currentPrice, change:d.change, changePercent:d.changePercent, ok:true};
+            }catch(e){
+                return {...w, price:null, change:0, changePercent:0, ok:false};
             }
+        }));
+
+        // Only show stocks that returned real data
+        const live = results.filter(r=>r.ok && r.price);
+
+        // Trending (sorted by |change%|)
+        const trending = [...live].sort((a,b)=>Math.abs(b.changePercent)-Math.abs(a.changePercent)).slice(0,8);
+        renderTrending(trending);
+
+        // Gainers / Losers
+        const sorted = [...live].sort((a,b)=>b.changePercent-a.changePercent);
+        renderPerfList('gainerList', sorted.slice(0,5),  true);
+        renderPerfList('loserList',  sorted.slice(-5).reverse(), false);
+
+        // Ticker
+        buildTicker(live);
+
+        // FII/DII (simulated – NSE provides this only via authenticated API)
+        loadFiiDii();
+        loadBreadth();
+    }
+
+    function renderTrending(stocks){
+        const grid = document.getElementById('trendingGrid');
+        if(!stocks.length){ grid.innerHTML='<div style="color:var(--txt3);font-size:13px;grid-column:1/-1;text-align:center;padding:20px">No live data — is the backend running?</div>'; return; }
+        grid.innerHTML='';
+        stocks.forEach(s=>{
+            const d = document.createElement('div');
+            d.className='stock-card';
+            d.innerHTML=`
+      <div>
+        <div class="s-sym ${cls(s.changePercent)}">${s.sym}</div>
+        <div class="s-name">${s.name}</div>
+      </div>
+      <div>
+        <div class="s-price">₹${fi(s.price)}</div>
+        <div class="s-chg ${cls(s.changePercent)}">${pct(s.changePercent)}</div>
+      </div>`;
+            d.onclick=()=>goAnalyze(s);
+            grid.appendChild(d);
         });
     }
 
-    // ============================================
-    // CHARTS UPDATES
-    // ============================================
-
-    function updateCharts() {
-        if (!charts.nifty || !charts.sensex) return;
-
-        // Update NIFTY chart
-        const niftyData = charts.nifty.data.datasets[0].data;
-        const lastNiftyValue = niftyData[niftyData.length - 1];
-        const newNiftyValue = lastNiftyValue + (Math.random() - 0.5) * 50;
-        niftyData.push(newNiftyValue);
-        niftyData.shift();
-
-        charts.nifty.update('none');
-
-        // Update SENSEX chart
-        const sensexData = charts.sensex.data.datasets[0].data;
-        const lastSensexValue = sensexData[sensexData.length - 1];
-        const newSensexValue = lastSensexValue + (Math.random() - 0.5) * 100;
-        sensexData.push(newSensexValue);
-        sensexData.shift();
-
-        charts.sensex.update('none');
+    function renderPerfList(id, items, isGainer){
+        const el = document.getElementById(id);
+        if(!items.length){el.innerHTML='<div style="color:var(--txt3);font-size:12px;text-align:center;padding:12px">—</div>';return;}
+        el.innerHTML='';
+        items.forEach(s=>{
+            const d=document.createElement('div');
+            d.className='perf-item';
+            d.innerHTML=`
+      <div>
+        <div class="perf-sym">${s.sym}</div>
+        <div class="perf-price">₹${fi(s.price)}</div>
+      </div>
+      <div class="perf-pct ${isGainer?'pos':'neg'}">${sgn(s.changePercent)}${s.changePercent.toFixed(2)}%</div>`;
+            d.onclick=()=>goAnalyze(s);
+            el.appendChild(d);
+        });
     }
 
-    // ============================================
-    // MAIN UPDATE FUNCTION
-    // ============================================
-
-    function updateMarketData() {
-        marketData.updateCount++;
-
-        // Update market indices
-        updateMarketIndices();
-
-        // Update trending stocks
-        updateTrendingStocks();
-
-        // Update institutional activity
-        updateInstitutionalActivity();
-
-        // Update market indicators
-        updateMarketIndicators();
-
-        // Update charts
-        updateCharts();
-
-        // Update time
-        updateLiveTime();
+    function buildTicker(stocks){
+        const track = document.getElementById('tickerTrack');
+        const items = [...stocks,...stocks];
+        track.innerHTML = items.map(s=>`
+    <div class="ticker-item">
+      <span class="t-sym">${s.sym}</span>
+      <span class="t-price">₹${fi(s.price)}</span>
+      <span class="t-chg ${cls(s.changePercent)}">${pct(s.changePercent)}</span>
+    </div>`).join('');
     }
 
-    // ============================================
-    // INITIALIZATION
-    // ============================================
+    function goAnalyze(s){
+        sessionStorage.setItem('analyzingStock', JSON.stringify({
+            symbol:s.sym, name:s.name,
+            currentPrice:s.price, change:s.change, changePercent:s.changePercent
+        }));
+        window.location.href='analyze.html';
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('🚀 Initializing with Real charts...');
+    function loadFiiDii(){
+        // NSE publishes FII/DII data daily – simulated with realistic ranges
+        document.getElementById('fiiBuy').textContent  = fi(2100+Math.random()*900);
+        document.getElementById('fiiSell').textContent = fi(1700+Math.random()*800);
+        document.getElementById('diiBuy').textContent  = fi(1000+Math.random()*600);
+        document.getElementById('diiSell').textContent = fi(700+Math.random()*400);
+    }
 
-        // Initialize charts
-        initializeRealCharts();
+    function loadBreadth(){
+        const adv=Math.floor(1350+Math.random()*400);
+        const dec=Math.floor(700+Math.random()*300);
+        document.getElementById('advances').textContent  = adv.toLocaleString('en-IN');
+        document.getElementById('declines').textContent  = dec.toLocaleString('en-IN');
+        document.getElementById('unchanged').textContent = Math.max(0,2517-adv-dec).toLocaleString('en-IN');
+        document.getElementById('breadth').textContent   = (adv/dec).toFixed(2);
+        document.getElementById('volume').textContent    = fi(42000+Math.random()*15000,0);
+        document.getElementById('turnover').textContent  = fi(110000+Math.random()*30000,0);
+    }
 
-        // Load real market news
-        loadMarketNews();
+    /* ── NEWS ───────────────────────────────────────────────────── */
+    async function loadNews(){
+        const feeds=[
+            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Feconomictimes.indiatimes.com%2Fmarkets%2Frssfeeds%2F1977021501.cms',
+            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Findianexpress.com%2Fsection%2Fbusiness%2Ffeed%2F',
+            'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.moneycontrol.com%2Frss%2Fbusiness.xml',
+        ];
+        for(const url of feeds){
+            try{
+                const r=await fetch(url,{signal:AbortSignal.timeout(5000)});
+                if(!r.ok) continue;
+                const d=await r.json();
+                if(d.items?.length){ renderNews(d.items.slice(0,8)); return; }
+            }catch(e){}
+        }
+        renderNews(staticNews());
+    }
 
-        // Initialize time
-        updateLiveTime();
+    function renderNews(items){
+        const nl=document.getElementById('newsList');
+        nl.innerHTML='';
+        items.forEach(item=>{
+            const t=item.pubDate?new Date(item.pubDate).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true}):new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+            const el=document.createElement('div');
+            el.className='news-item';
+            el.innerHTML=`<div class="news-time"><i class="fas fa-clock"></i> ${t}</div>
+      <div class="news-head">${(item.title||'').replace(/<[^>]+>/g,'').slice(0,110)}</div>
+      <div class="news-src">${item.author||'Market News'}</div>`;
+            el.onclick=()=>item.link&&item.link!=='#'&&window.open(item.link,'_blank');
+            nl.appendChild(el);
+        });
+    }
 
-        // Initialize trending stocks
-        updateTrendingStocks();
+    function staticNews(){
+        return [
+            {title:'NIFTY 50 holds key support; IT and banking stocks outperform',pubDate:new Date(),author:'ET Markets',link:'#'},
+            {title:'FIIs turn net buyers; invest over ₹2,000 Cr in Indian equities',pubDate:new Date(Date.now()-600000),author:'Business Standard',link:'#'},
+            {title:'RBI MPC minutes: Rates on hold; inflation trajectory being watched',pubDate:new Date(Date.now()-1200000),author:'Moneycontrol',link:'#'},
+            {title:'Reliance Industries Q3 results beat estimates; Jio drives growth',pubDate:new Date(Date.now()-1800000),author:'CNBC TV18',link:'#'},
+            {title:'Auto sector: Maruti posts record monthly sales for January 2026',pubDate:new Date(Date.now()-2400000),author:'ET Auto',link:'#'},
+            {title:'Pharma stocks rally after USFDA approvals; Sun Pharma leads gains',pubDate:new Date(Date.now()-3000000),author:'Economic Times',link:'#'},
+        ];
+    }
 
-        // Start market updates
-        setInterval(updateRealCharts, CHART_CONFIG.updateInterval);
-        setInterval(updateMarketData, MARKET_CONFIG.updateInterval);
-        setInterval(updateLiveTime, 100);
+    /* ── MAIN ───────────────────────────────────────────────────── */
+    async function main(){
+        const online = await checkBackend();
 
-        // Update time every 100ms
-        setInterval(updateLiveTime, 100);
+        // Load all in parallel
+        await Promise.all([
+            ...INDEX_CFG.map(loadIndex),
+            loadStocks(),
+            loadNews(),
+        ]);
 
-        // Update news every 5 minutes
-        setInterval(loadMarketNews, 5 * 60 * 1000);
-
-        console.log('✅ Home page initialized with REAL charts');
-
-        // ============================================
-        // INSTANT STOCK PROCESSING - PRELOADED DATA
-        // ============================================
-
-        // Check if we have preprocessed data
-        function initInstantStockProcessing() {
-            const showBtn = document.getElementById('showStockAnalyzerBtn');
-            const startBtn = document.getElementById('startProcessingBtn');
-
-            if (!showBtn) return;
-
-            // Check for cached data immediately
-            checkForCachedData();
-
-            // Toggle visibility
-            showBtn.addEventListener('click', function() {
-                const section = document.getElementById('stockProcessingSection');
-                if (section.style.display === 'none' || section.style.display === '') {
-                    section.style.display = 'block';
-
-                    // INSTANTLY show cached data if available
-                    const cachedData = localStorage.getItem('stock_sectors_data');
-                    if (cachedData) {
-                        displayCachedResults(JSON.parse(cachedData));
-                    } else {
-                        // Show option to load
-                        document.getElementById('sectorResults').innerHTML = `
-                            <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
-                                <i class="fas fa-database" style="font-size: 32px; margin-bottom: 15px; color: var(--primary);"></i>
-                                <div style="font-size: 16px; font-weight: 600; margin-bottom: 5px;">No Preprocessed Data Found</div>
-                                <div style="font-size: 14px; margin-bottom: 20px;">Process stocks to see instant results</div>
-                                <button onclick="startInstantProcessing()" class="small-btn" style="margin: 5px;">
-                                    <i class="fas fa-bolt"></i> Process 3500+ Stocks
-                                </button>
-                            </div>
-                        `;
-                    }
-                } else {
-                    section.style.display = 'none';
+        if(!online){
+            // Retry backend every 10s
+            const retry = setInterval(async()=>{
+                const ok = await checkBackend();
+                if(ok){
+                    clearInterval(retry);
+                    await Promise.all([...INDEX_CFG.map(loadIndex), loadStocks()]);
                 }
-            });
-
-            // Override start button
-            if (startBtn) {
-                startBtn.addEventListener('click', startInstantProcessing);
-            }
-
-            console.log('✅ Instant stock processing ready');
+            },10000);
         }
 
-        // Check for cached data on page load
-        function checkForCachedData() {
-            const cachedData = localStorage.getItem('stock_sectors_data');
-            if (cachedData) {
-                const data = JSON.parse(cachedData);
-                const timestamp = localStorage.getItem('stock_sectors_timestamp');
-                const age = Date.now() - timestamp;
+        // Refresh every 60s
+        setInterval(async()=>{
+            await Promise.all([...INDEX_CFG.map(loadIndex), loadStocks()]);
+        }, 60000);
 
-                if (age < 24 * 60 * 60 * 1000) { // Less than 24 hours old
-                    document.getElementById('totalStocks').textContent = data.total_stocks.toLocaleString();
-                    console.log(`✅ Using cached data: ${data.total_stocks} stocks`);
-                }
-            }
-        }
+        setInterval(loadNews, 5*60*1000);
+    }
 
-        // INSTANT Processing - Shows immediate results
-        function startInstantProcessing() {
-            // Load preprocessed JSON file INSTANTLY
-            loadPreprocessedData();
-        }
-
-        // Load preprocessed JSON file
-        async function loadPreprocessedData() {
-            document.getElementById('statusText').textContent = 'Loading preprocessed data...';
-            document.getElementById('statusText').style.color = 'var(--primary)';
-
-            try {
-                // Try to load from preprocessed file
-                const response = await fetch('stock_sectors_preprocessed.json');
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    // Cache it
-                    localStorage.setItem('stock_sectors_data', JSON.stringify(data));
-                    localStorage.setItem('stock_sectors_timestamp', Date.now());
-
-                    // INSTANTLY display results
-                    displayCachedResults(data);
-                    showNotification(`✅ Loaded ${data.total_stocks.toLocaleString()} preprocessed stocks instantly`, 'success');
-
-                } else {
-                    // Fallback: Process in background with Web Worker
-                    processWithWorker();
-                }
-
-            } catch (error) {
-                console.log('No preprocessed file, using worker...');
-                processWithWorker();
-            }
-        }
-
-        // Process with Web Worker (only if no preprocessed data)
-        function processWithWorker() {
-            document.getElementById('startProcessingBtn').style.display = 'none';
-            document.getElementById('pauseProcessingBtn').style.display = 'inline-flex';
-            document.getElementById('statusText').textContent = 'Processing with Web Worker...';
-
-            const worker = new Worker('stock-worker-fast.js');
-
-            worker.onmessage = function(e) {
-                const { type, data } = e.data;
-
-                if (type === 'progress') {
-                    document.getElementById('progressBar').style.width = data.percent + '%';
-                    document.getElementById('progressPercentage').textContent = data.percent + '%';
-                    document.getElementById('processedCount').textContent = data.processed.toLocaleString();
-                }
-                else if (type === 'complete') {
-                    displayResults(data.results);
-                    showNotification(`✅ Processed ${data.total} stocks in ${(data.time/1000).toFixed(1)}s`, 'success');
-
-                    // Cache results
-                    const cacheData = {
-                        processed_at: new Date().toISOString(),
-                        total_stocks: data.total,
-                        stocks: data.results
-                    };
-                    localStorage.setItem('stock_sectors_data', JSON.stringify(cacheData));
-                    localStorage.setItem('stock_sectors_timestamp', Date.now());
-
-                    worker.terminate();
-                }
-            };
-
-            // Start processing
-            worker.postMessage({ action: 'process' });
-        }
-
-        // INSTANTLY display cached results
-        function displayCachedResults(data) {
-            document.getElementById('startProcessingBtn').style.display = 'none';
-            document.getElementById('exportResultsBtn').style.display = 'inline-flex';
-            document.getElementById('statusText').textContent = 'Using preprocessed data ✓';
-            document.getElementById('statusText').style.color = 'var(--success)';
-            document.getElementById('totalStocks').textContent = data.total_stocks.toLocaleString();
-            document.getElementById('processedCount').textContent = data.total_stocks.toLocaleString();
-            document.getElementById('progressBar').style.width = '100%';
-            document.getElementById('progressPercentage').textContent = '100%';
-
-            // Display sector distribution
-            displayResults(data.stocks);
-        }
-
-        // Display results
-        function displayResults(results) {
-            // Group by sector
-            const sectors = {};
-            results.forEach(stock => {
-                sectors[stock.sector] = (sectors[stock.sector] || 0) + 1;
-            });
-
-            // Sort by count
-            const sorted = Object.entries(sectors)
-                .map(([sector, count]) => ({ sector, count }))
-                .sort((a, b) => b.count - a.count);
-
-            let html = '<div style="display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; padding-right: 5px;">';
-
-            sorted.forEach(item => {
-                const percent = ((item.count / results.length) * 100).toFixed(1);
-                html += `
-                    <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; border-left: 4px solid var(--primary); transition: transform 0.2s;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 600; color: var(--text-primary); font-size: 14px;">${item.sector}</span>
-                            <span style="font-family: 'Roboto Mono', monospace; font-weight: 700; color: var(--primary); font-size: 13px;">
-                                ${item.count.toLocaleString()} (${percent}%)
-                            </span>
-                        </div>
-                        <div style="height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden;">
-                            <div style="height: 100%; background: linear-gradient(90deg, var(--primary), var(--info)); width: ${percent}%;"></div>
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += '</div>';
-            document.getElementById('sectorResults').innerHTML = html;
-        }
-
-        // Export results
-        function exportResults() {
-            const cachedData = localStorage.getItem('stock_sectors_data');
-            if (!cachedData) {
-                showNotification('⚠️ No data to export', 'warning');
-                return;
-            }
-
-            const data = JSON.parse(cachedData);
-
-            // Create CSV
-            let csv = 'Symbol,Name,Sector\n';
-            data.stocks.forEach(stock => {
-                csv += `"${stock.symbol}","${stock.name.replace(/"/g, '""')}","${stock.sector}"\n`;
-            });
-
-            // Download
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `stock_sectors_${new Date().toISOString().slice(0, 10)}.csv`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            showNotification('📥 Exported all stocks as CSV', 'success');
-        }
-
-        // Initialize instantly
-        setTimeout(initInstantStockProcessing, 100);
-
-        // Make functions globally available
-        window.startInstantProcessing = startInstantProcessing;
-        window.exportResults = exportResults;
-
-    }); // Your existing closing });
-
-
+    document.addEventListener('DOMContentLoaded', main);
 </script>
-<div id="root"></div>
 </body>
 </html>

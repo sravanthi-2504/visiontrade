@@ -1,223 +1,319 @@
-from flask import Flask, jsonify, request
+"""
+Vision Trade Backend — app.py
+Run: pip install flask flask-cors yfinance && python app.py
+Serves on http://127.0.0.1:5001
+"""
+
+from flask import Flask, jsonify
 from flask_cors import CORS
 import yfinance as yf
-import pandas as pd
-import numpy as np
-import feedparser
 from datetime import datetime, timedelta
+import pytz
+import traceback
 import threading
 import time
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for React frontend
+CORS(app)  # Allow all origins (needed for browser fetch)
 
-print("=" * 60)
-print("🚀 VISIONTRADE STOCK MARKET API")
-print("=" * 60)
+# ── Cache to avoid hammering Yahoo Finance ──────────────────────────
+_cache = {}
+_cache_lock = threading.Lock()
+CACHE_TTL = 60  # seconds
 
-@app.route('/')
-def home():
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>VisionTrade API</title>
-        <style>
-            body { font-family: Arial, sans-serif; padding: 40px; background: #f5f5f5; }
-            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            h1 { color: #2c3e50; }
-            .endpoint { background: #f8f9fa; padding: 15px; margin: 10px 0; border-left: 4px solid #3498db; }
-            code { background: #2c3e50; color: white; padding: 2px 6px; border-radius: 3px; }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>📈 VisionTrade Stock Market API</h1>
-            <p>Welcome to the VisionTrade API server. Available endpoints:</p>
-            
-            <div class="endpoint">
-                <strong><code>GET /api/health</code></strong>
-                <p>Health check endpoint</p>
-                <a href="/api/health">Test it now</a>
-            </div>
-            
-            <div class="endpoint">
-                <strong><code>GET /api/market-data</code></strong>
-                <p>Get all market data (indices, gainers, losers, news)</p>
-                <a href="/api/market-data">Test it now</a>
-            </div>
-            
-            <div class="endpoint">
-                <strong><code>GET /api/stock/&lt;symbol&gt;</code></strong>
-                <p>Get specific stock data (e.g., /api/stock/TCS)</p>
-                <a href="/api/stock/TCS">Test TCS</a> | 
-                <a href="/api/stock/INFY">Test INFY</a>
-            </div>
-            
-            <div class="endpoint">
-                <strong><code>GET /api/search/&lt;query&gt;</code></strong>
-                <p>Search for stocks</p>
-                <a href="/api/search/TCS">Search "TCS"</a>
-            </div>
-            
-            <hr>
-            <p><strong>API Status:</strong> <span style="color: green;">● Running</span></p>
-            <p><strong>Timestamp:</strong> ''' + datetime.now().isoformat() + '''</p>
-        </div>
-    </body>
-    </html>
-    '''
+def cached(key, fetch_fn):
+    with _cache_lock:
+        entry = _cache.get(key)
+        if entry and (time.time() - entry["ts"]) < CACHE_TTL:
+            return entry["data"]
+    data = fetch_fn()
+    with _cache_lock:
+        _cache[key] = {"data": data, "ts": time.time()}
+    return data
 
+# ── NSE symbol → Yahoo Finance ticker ──────────────────────────────
+# For NSE stocks append ".NS", for BSE append ".BO"
+# Indices: ^NSEI (Nifty50), ^BSESN (Sensex), ^CRSLDX (Nifty500)
 
-@app.route('/api/health')
+NSE_SYMBOLS = [
+    "RELIANCE","TCS","HDFCBANK","INFY","ICICIBANK","HINDUNILVR","ITC","SBIN",
+    "BHARTIARTL","KOTAKBANK","LT","AXISBANK","BAJFINANCE","ASIANPAINT","MARUTI",
+    "TITAN","SUNPHARMA","ULTRACEMCO","NESTLEIND","BAJAJFINSV","WIPRO","M&M",
+    "HCLTECH","TATAMOTORS","TATASTEEL","ONGC","NTPC","POWERGRID","JSWSTEEL",
+    "INDUSINDBK","TECHM","HINDALCO","COALINDIA","ADANIENT","ADANIPORTS",
+    "HEROMOTOCO","DIVISLAB","DRREDDY","CIPLA","BRITANNIA","EICHERMOT","GRASIM",
+    "SHREECEM","APOLLOHOSP","TATACONSUM","VEDL","BPCL","IOC","HINDZINC",
+    "BANDHANBNK","FEDERALBNK","IDFCFIRSTB","RBLBANK","YESBANK","BANKBARODA",
+    "PNB","CANBK","UNIONBANK","BANKINDIA","INDIANB","AUBANK","EQUITAS",
+    "UJJIVANSFB","DCBBANK","LTIM","PERSISTENT","COFORGE","MPHASIS","LTTS",
+    "TATAELXSI","CYIENT","AFFLE","NAUKRI","ZOMATO","LUPIN","BIOCON",
+    "TORNTPHARM","AUROPHARMA","ALKEM","GLENMARK","BAJAJ-AUTO","TVSMOTOR",
+    "ASHOKLEY","ESCORTS","MRF","APOLLOTYRE","CEATLTD","BALKRISIND","BHARATFORG",
+    "BOSCHLTD","DABUR","GODREJCP","MARICO","COLPAL","EMAMILTD","VBL","JUBLFOOD",
+    "DMART","TRENT","JINDALSTEL","SAIL","NMDC","NATIONALUM","GAIL","PETRONET",
+    "IGL","MGL","TATAPOWER","ADANIPOWER","JSWENERGY","NHPC","SUZLON","ACC",
+    "AMBUJACEM","RAMCOCEM","DALBHARAT","JKCEMENT","CHOLAFIN","MUTHOOTFIN",
+    "MANAPPURAM","PFC","RECLTD","HDFCAMC","HDFCLIFE","SBILIFE","ICICIPRULI",
+    "ICICIGI","DLF","GODREJPROP","OBEROIRLTY","PRESTIGE","BRIGADE","SOBHA",
+    "PHOENIXLTD","UPL","PIDILITIND","SRF","TATACHEM","AARTIIND","DEEPAKNTR",
+    "NAVINFLUOR","PIIND","NCC","NBCC","IRCON","RVNL","IDEA","INDUSTOWER",
+    "HFCL","ARVIND","KPRMILL","TRIDENT","WELSPUNIND","ZEEL","SUNTV","PVRINOX",
+    "HAL","BEL","BDL","BEML","BHEL","CONCOR","BLUEDART","DELHIVERY",
+    "HAVELLS","CROMPTON","VOLTAS","DIXON","POLYCAB","BERGEPAINT","INDIGO",
+    "BATAINDIA","IRCTC","RAILTEL","MOTHERSON","EXIDEIND","AMARAJABAT",
+    "KEI","KANSAINER","INDIAMART","CDSL","CAMS","NUVOCO","SOBHA",
+]
+
+def nse_to_yf(symbol):
+    """Convert NSE symbol to Yahoo Finance ticker."""
+    # Special cases
+    special = {
+        "M&M": "M%26M.NS",
+        "BAJAJ-AUTO": "BAJAJ-AUTO.NS",
+    }
+    if symbol in special:
+        return special[symbol]
+    return f"{symbol}.NS"
+
+# ── ROUTES ──────────────────────────────────────────────────────────
+
+@app.route("/api/health")
 def health():
-    return jsonify({
-        "status": "healthy",
-        "service": "visiontrade-api",
-        "timestamp": datetime.now().isoformat(),
-        "version": "1.0.0",
-        "endpoints": [
-            "/api/health",
-            "/api/market-data",
-            "/api/stock/<symbol>",
-            "/api/search/<query>"
-        ]
-    })
+    return jsonify({"status": "ok", "time": datetime.now().isoformat()})
 
 
-@app.route('/api/market-data')
-def market_data():
-    """Get all market data"""
-    try:
-        # Mock data for quick testing
-        return jsonify({
+@app.route("/api/stock/<symbol>")
+def get_stock(symbol):
+    """Return real-time quote for a single NSE stock."""
+    symbol = symbol.upper()
+
+    def fetch():
+        yf_sym = nse_to_yf(symbol)
+        ticker = yf.Ticker(yf_sym)
+        info = ticker.fast_info  # faster than .info
+
+        current  = float(info.last_price or 0)
+        prev     = float(info.previous_close or current)
+        change   = round(current - prev, 2)
+        chg_pct  = round((change / prev * 100) if prev else 0, 2)
+        market_cap = float(getattr(info, "market_cap", 0) or 0)
+
+        hist = ticker.history(period="1d", interval="5m")
+        chart_labels = []
+        chart_values = []
+        if not hist.empty:
+            ist = pytz.timezone("Asia/Kolkata")
+            for ts, row in hist.iterrows():
+                if hasattr(ts, "tz_convert"):
+                    ts = ts.tz_convert(ist)
+                chart_labels.append(ts.strftime("%H:%M"))
+                chart_values.append(round(float(row["Close"]), 2))
+
+        return {
             "status": "success",
-            "marketStatus": "OPEN",
-            "indices": [
-                {"name": "NIFTY 50", "value": 22045.50, "change": 1.23},
-                {"name": "SENSEX", "value": 72650.75, "change": 0.89},
-                {"name": "NIFTY BANK", "value": 48560.25, "change": 1.56}
-            ],
-            "topGainers": [
-                {"symbol": "TCS", "name": "Tata Consultancy", "price": 3890.50, "change": 2.45, "change_pct": 3.2},
-                {"symbol": "INFY", "name": "Infosys", "price": 1650.75, "change": 32.50, "change_pct": 2.1},
-                {"symbol": "RELIANCE", "name": "Reliance", "price": 2850.25, "change": 45.30, "change_pct": 1.8}
-            ],
-            "topLosers": [
-                {"symbol": "ITC", "name": "ITC Ltd", "price": 425.60, "change": -8.75, "change_pct": -2.1},
-                {"symbol": "SBIN", "name": "SBI", "price": 620.40, "change": -12.30, "change_pct": -1.9},
-                {"symbol": "ICICIBANK", "name": "ICICI Bank", "price": 1050.80, "change": -18.40, "change_pct": -1.7}
-            ],
-            "mostActive": [
-                {"symbol": "TCS", "name": "Tata Consultancy", "volume": "2.5M", "price": 3890.50, "change_pct": 3.2},
-                {"symbol": "RELIANCE", "name": "Reliance", "volume": "1.8M", "price": 2850.25, "change_pct": 1.8},
-                {"symbol": "INFY", "name": "Infosys", "volume": "1.5M", "price": 1650.75, "change_pct": 2.1}
-            ],
-            "marketNews": [
-                {"title": "Stock markets hit record highs", "source": "Economic Times", "time": "2 hours ago"},
-                {"title": "RBI keeps repo rate unchanged", "source": "Business Standard", "time": "4 hours ago"},
-                {"title": "IT sector leads market rally", "source": "Moneycontrol", "time": "6 hours ago"}
-            ],
-            "timestamp": datetime.now().isoformat()
-        })
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route('/api/stock/<symbol>')
-def stock_data(symbol):
-    """Get data for specific stock"""
-    try:
-        # Simple mock data
-        prices = {
-            "TCS": 3890.50,
-            "INFY": 1650.75,
-            "RELIANCE": 2850.25,
-            "SBIN": 620.40,
-            "ITC": 425.60,
-            "ICICIBANK": 1050.80
+            "symbol": symbol,
+            "currentPrice": round(current, 2),
+            "previousClose": round(prev, 2),
+            "change": change,
+            "changePercent": chg_pct,
+            "marketCap": market_cap,
+            "high": round(float(getattr(info, "day_high", current) or current), 2),
+            "low":  round(float(getattr(info, "day_low",  current) or current), 2),
+            "volume": int(getattr(info, "shares", 0) or 0),
+            "chart": {"labels": chart_labels, "values": chart_values},
+            "lastUpdated": datetime.now().strftime("%H:%M:%S"),
         }
-        
-        price = prices.get(symbol.upper(), 1000.00)
-        
-        return jsonify({
+
+    try:
+        return jsonify(cached(f"stock:{symbol}", fetch))
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"status": "error", "symbol": symbol, "message": str(e)}), 500
+
+
+@app.route("/api/stocks/batch")
+def get_stocks_batch():
+    """
+    Return quotes for all NSE_SYMBOLS at once.
+    Uses yfinance download() which is much faster than individual calls.
+    """
+    def fetch():
+        yf_syms = [nse_to_yf(s) for s in NSE_SYMBOLS]
+        # download last 2 days so we can compute prev close
+        data = yf.download(yf_syms, period="2d", interval="1d",
+                           group_by="ticker", progress=False, auto_adjust=True)
+        results = []
+        for sym, yf_sym in zip(NSE_SYMBOLS, yf_syms):
+            try:
+                df = data[yf_sym] if len(yf_syms) > 1 else data
+                if df.empty or len(df) < 1:
+                    continue
+                current   = float(df["Close"].iloc[-1])
+                prev      = float(df["Close"].iloc[-2]) if len(df) >= 2 else current
+                change    = round(current - prev, 2)
+                chg_pct   = round((change / prev * 100) if prev else 0, 2)
+                results.append({
+                    "symbol": sym,
+                    "currentPrice": round(current, 2),
+                    "previousClose": round(prev, 2),
+                    "change": change,
+                    "changePercent": chg_pct,
+                })
+            except Exception:
+                pass
+        return {"status": "success", "stocks": results, "count": len(results)}
+
+    try:
+        return jsonify(cached("batch:all", fetch))
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/index/<path:symbol>")
+def get_index(symbol):
+    """
+    Fetch a market index quote.
+    symbol examples: ^NSEI, ^BSESN, ^CRSLDX
+    """
+    def fetch():
+        ticker = yf.Ticker(symbol)
+        info   = ticker.fast_info
+
+        current = float(info.last_price or 0)
+        prev    = float(info.previous_close or current)
+        change  = round(current - prev, 2)
+        chg_pct = round((change / prev * 100) if prev else 0, 2)
+
+        # Intraday chart data
+        hist = ticker.history(period="1d", interval="5m")
+        chart_labels = []
+        chart_values = []
+        if not hist.empty:
+            ist = pytz.timezone("Asia/Kolkata")
+            for ts, row in hist.iterrows():
+                if hasattr(ts, "tz_convert"):
+                    ts = ts.tz_convert(ist)
+                chart_labels.append(ts.strftime("%H:%M"))
+                chart_values.append(round(float(row["Close"]), 2))
+
+        return {
             "status": "success",
-            "symbol": symbol.upper(),
-            "currentPrice": price,
-            "change": round(price * 0.02, 2),  # Mock 2% change
-            "changePercent": 2.0,
-            "prediction": {
-                "predictedPrice": round(price * 1.05, 2),
-                "confidence": 78.5,
-                "recommendation": "BUY",
-                "target": round(price * 1.10, 2)
-            },
-            "timestamp": datetime.now().isoformat()
-        })
+            "symbol": symbol,
+            "current": round(current, 2),
+            "previousClose": round(prev, 2),
+            "change": change,
+            "changePercent": str(chg_pct),
+            "high": round(float(getattr(info, "day_high", current) or current), 2),
+            "low":  round(float(getattr(info, "day_low",  current) or current), 2),
+            "chart": {"labels": chart_labels, "values": chart_values},
+            "lastUpdated": datetime.now().strftime("%H:%M:%S"),
+        }
+
+    try:
+        return jsonify(cached(f"index:{symbol}", fetch))
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"status": "error", "symbol": symbol, "message": str(e)}), 500
+
+
+@app.route("/api/stock/<symbol>/history")
+def get_history(symbol):
+    """Return 6-month price history for charts on the analyze page."""
+    symbol = symbol.upper()
+
+    def fetch():
+        yf_sym = nse_to_yf(symbol)
+        ticker = yf.Ticker(yf_sym)
+        hist   = ticker.history(period="6mo", interval="1d")
+
+        labels, closes, volumes = [], [], []
+        if not hist.empty:
+            for ts, row in hist.iterrows():
+                labels.append(ts.strftime("%d %b"))
+                closes.append(round(float(row["Close"]), 2))
+                volumes.append(int(row["Volume"]))
+
+        # Also grab info for PE, 52w high/low etc.
+        info = {}
+        try:
+            raw = ticker.info
+            info = {
+                "pe":        raw.get("trailingPE"),
+                "eps":       raw.get("trailingEps"),
+                "week52High":raw.get("fiftyTwoWeekHigh"),
+                "week52Low": raw.get("fiftyTwoWeekLow"),
+                "avgVolume": raw.get("averageVolume"),
+                "dividend":  raw.get("dividendYield"),
+                "beta":      raw.get("beta"),
+                "bookValue": raw.get("bookValue"),
+                "pbRatio":   raw.get("priceToBook"),
+                "roe":       raw.get("returnOnEquity"),
+                "debtEquity":raw.get("debtToEquity"),
+                "industry":  raw.get("industry"),
+                "sector":    raw.get("sector"),
+                "description": raw.get("longBusinessSummary","")[:400],
+            }
+        except Exception:
+            pass
+
+        return {
+            "status": "success",
+            "symbol": symbol,
+            "chart": {"labels": labels, "closes": closes, "volumes": volumes},
+            "info": info,
+        }
+
+    try:
+        return jsonify(cached(f"history:{symbol}", fetch))
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route("/api/gainers")
+def get_gainers():
+    """Top gainers from our watchlist."""
+    try:
+        batch = cached("batch:all", lambda: _fetch_batch_inner())
+        stocks = batch.get("stocks", [])
+        gainers = sorted(stocks, key=lambda x: x["changePercent"], reverse=True)[:10]
+        losers  = sorted(stocks, key=lambda x: x["changePercent"])[:10]
+        return jsonify({"status": "success", "gainers": gainers, "losers": losers})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-@app.route('/api/search/<query>')
-def search_stocks(query):
-    """Search for stocks"""
-    stocks = [
-        {"symbol": "TCS", "name": "Tata Consultancy Services", "exchange": "NSE"},
-        {"symbol": "INFY", "name": "Infosys", "exchange": "NSE"},
-        {"symbol": "RELIANCE", "name": "Reliance Industries", "exchange": "NSE"},
-        {"symbol": "HDFCBANK", "name": "HDFC Bank", "exchange": "NSE"},
-        {"symbol": "ICICIBANK", "name": "ICICI Bank", "exchange": "NSE"},
-        {"symbol": "SBIN", "name": "State Bank of India", "exchange": "NSE"},
-        {"symbol": "AAPL", "name": "Apple Inc", "exchange": "NASDAQ"},
-        {"symbol": "GOOGL", "name": "Alphabet Inc", "exchange": "NASDAQ"},
-        {"symbol": "MSFT", "name": "Microsoft", "exchange": "NASDAQ"}
-    ]
-    
-    query = query.upper()
-    results = [s for s in stocks if query in s["symbol"] or query in s["name"].upper()]
-    
-    return jsonify({
-        "status": "success",
-        "query": query,
-        "results": results,
-        "count": len(results)
-    })
-
-
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({
-        "status": "error",
-        "message": "Endpoint not found",
-        "available_endpoints": [
-            "/",
-            "/api/health",
-            "/api/market-data",
-            "/api/stock/<symbol>",
-            "/api/search/<query>"
-        ]
-    }), 404
-
-if __name__ == '__main__':
-    print("📡 Available endpoints:")
-    print("   🌐 http://localhost:5001/")
-    print("   ❤️  http://localhost:5001/api/health")
-    print("   📊 http://localhost:5001/api/market-data")
-    print("   📈 http://localhost:5001/api/stock/TCS")
-    print("   🔍 http://localhost:5001/api/search/TCS")
-    print("=" * 60)
-    print("💡 Tip: Keep this terminal open while using the API")
-    print("=" * 60)
-    
-    # Try different ports if 5001 is busy
-    ports = [5001, 5002, 5003, 8000, 8080]
-    for port in ports:
+def _fetch_batch_inner():
+    """Internal helper reused by gainers endpoint."""
+    yf_syms = [nse_to_yf(s) for s in NSE_SYMBOLS[:50]]  # Top 50 only for speed
+    data = yf.download(yf_syms, period="2d", interval="1d",
+                       group_by="ticker", progress=False, auto_adjust=True)
+    results = []
+    for sym, yf_sym in zip(NSE_SYMBOLS[:50], yf_syms):
         try:
-            print(f"\n🔧 Trying port {port}...")
-            app.run(host='0.0.0.0', port=port, debug=True)
-            break
-        except OSError as e:
-            if "Address already in use" in str(e):
-                print(f"   Port {port} is busy, trying next...")
+            df = data[yf_sym] if len(yf_syms) > 1 else data
+            if df.empty or len(df) < 1:
                 continue
-            else:
-                raise e
+            current = float(df["Close"].iloc[-1])
+            prev    = float(df["Close"].iloc[-2]) if len(df) >= 2 else current
+            change  = round(current - prev, 2)
+            chg_pct = round((change / prev * 100) if prev else 0, 2)
+            results.append({"symbol": sym, "currentPrice": round(current, 2),
+                            "previousClose": round(prev, 2),
+                            "change": change, "changePercent": chg_pct})
+        except Exception:
+            pass
+    return {"status": "success", "stocks": results, "count": len(results)}
+
+
+if __name__ == "__main__":
+    print("=" * 60)
+    print("  Vision Trade Backend — Real Indian Stock Prices")
+    print("  Powered by yfinance (Yahoo Finance)")
+    print("=" * 60)
+    print("  Install deps: pip install flask flask-cors yfinance pytz")
+    print("  Then run:     python app.py")
+    print("  API running at: http://127.0.0.1:5001")
+    print("=" * 60)
+    app.run(host="127.0.0.1", port=5001, debug=False, threaded=True)

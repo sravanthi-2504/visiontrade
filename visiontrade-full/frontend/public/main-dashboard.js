@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         // Check backend connection first
         try {
-            const healthCheck = await fetch('http://localhost:3000/api/stock?symbol=TCS');
+            const healthCheck = await fetch('http://127.0.0.1:5001/api/stock/TCS');
             if (!healthCheck.ok) {
                 throw new Error('Backend not responding');
             }
@@ -504,7 +504,7 @@ async function fetchRealPricesInBatches() {
 
         await Promise.all(batch.map(async (stock) => {
             try {
-                const response = await fetch(`http://localhost:3000/api/stock?symbol=${stock.symbol}`);
+                const response = await fetch(`http://127.0.0.1:5001/api/stock/${stock.symbol}`);
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
@@ -512,13 +512,13 @@ async function fetchRealPricesInBatches() {
 
                 const data = await response.json();
 
-                if (data && data.price && data.price > 0) {
-                    const previousClose = data.price / (1 + (data.change / 100));
+                if (data && data.currentPrice && data.currentPrice > 0)
+                    const previousClose = data.price / (1 + (       data.changePercent / 100));
 
-                    stock.price = data.price;
-                    stock.previousClose = previousClose;
+                stock.price = data.currentPrice;
+                stock.previousClose = previousClose;
                     stock.change = data.price - previousClose;
-                    stock.changePercent = data.change;
+                    stock.changePercent = data.changePercent;
                     if (data.marketCap) {
                         stock.marketCap = data.marketCap;
                         stock.marketCapType = getMarketCapType(stock.marketCap);
@@ -557,10 +557,10 @@ async function fetchRealPricesInBatches() {
 async function loadMarketIndices() {
     try {
         try {
-            const niftyResponse = await fetch('http://localhost:3000/api/stock?symbol=NSEI');
+            const niftyResponse = await fetch('http://127.0.0.1:5001/api/stock/^NSEI');
             if (niftyResponse.ok) {
                 const niftyData = await niftyResponse.json();
-                const previousClose = niftyData.price / (1 + (niftyData.change / 100));
+                const previousClose = niftyData.price / (1 + (niftyData.changePercent / 100));
                 updateIndexDisplay('nifty', niftyData.price, previousClose);
             } else {
                 throw new Error('NIFTY fetch failed');
@@ -572,10 +572,11 @@ async function loadMarketIndices() {
         }
 
         try {
-            const sensexResponse = await fetch('http://localhost:3000/api/stock?symbol=SENSEX');
+            const sensexResponse = await fetch('http://127.0.0.1:5001/api/stock/^BSESN');
+
             if (sensexResponse.ok) {
                 const sensexData = await sensexResponse.json();
-                const previousClose = sensexData.price / (1 + (sensexData.change / 100));
+                const previousClose = sensexData.price / (1 + (sensexData.changePercent / 100));
                 updateIndexDisplay('sensex', sensexData.price, previousClose);
             } else {
                 throw new Error('SENSEX fetch failed');
@@ -721,7 +722,7 @@ window.predictStock = async function(symbol) {
         console.log(`🔮 Generating predictions for ${symbol}...`);
 
         // Call the prediction API
-        const response = await fetch(`http://localhost:3000/api/predict?symbol=${symbol}`);
+        const response = await fetch(`http://127.0.0.1:5001/api/predict?symbol=${symbol}`);
 
         if (!response.ok) {
             throw new Error(`Prediction API returned ${response.status}`);
@@ -1114,15 +1115,20 @@ function startAutoRefresh() {
             const batch = liveStocks.slice(0, 20);
             await Promise.all(batch.map(async (stock) => {
                 try {
-                    const response = await fetch(`http://localhost:3000/api/stock?symbol=${stock.symbol}`);
+                    const response = await fetch(`http://127.0.0.1:5001/api/stock/${stock.symbol}`);
                     if (response.ok) {
                         const data = await response.json();
-                        if (data && data.price && data.price > 0) {
-                            stock.price = data.price;
-                            stock.change = stock.price - stock.previousClose;
-                            stock.changePercent = (stock.change / stock.previousClose) * 100;
-                            stock.recommendation = getRecommendation(stock.changePercent, stock.riskLevel);
+                        if (data && data.currentPrice && data.currentPrice > 0) {
+
+                            const previousClose = data.currentPrice / (1 + (data.changePercent / 100));
+
+                            stock.price = data.currentPrice;
+                            stock.previousClose = previousClose;
+                            stock.change = data.currentPrice - previousClose;
+                            stock.changePercent = data.changePercent;
+
                         }
+
                     }
                 } catch (error) {
                     console.warn(`Failed to refresh ${stock.symbol}`);

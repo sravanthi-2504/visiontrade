@@ -51,24 +51,87 @@ def market_data():
 @app.route('/api/stock/<symbol>')
 def stock_data(symbol):
     try:
-        if not symbol.endswith('.NS'):
-            symbol += '.NS'
-        
-        data = yf.download(symbol, period="7d", progress=False)
-        
-        if data.empty:
-            return jsonify({"error": "Stock not found"}), 404
-        
-        prices = data['Close'].astype(float).tolist()
-        
+        original_symbol = symbol.upper()
+
+        # Add NSE suffix if missing
+        if not original_symbol.endswith('.NS'):
+            yf_symbol = original_symbol + '.NS'
+        else:
+            yf_symbol = original_symbol
+
+        # Use safer period
+        data = yf.download(
+            yf_symbol,
+            period="1mo",   # safer than 7d
+            interval="1d",
+            progress=False
+        )
+
+        if data.empty or 'Close' not in data.columns:
+            return jsonify({
+                "status": "error",
+                "message": f"No data found for {original_symbol}"
+            }), 404
+
+        closes = data['Close'].dropna()
+
+        if len(closes) == 0:
+            return jsonify({
+                "status": "error",
+                "message": "No closing price data"
+            }), 404
+
+        current = float(closes.iloc[-1])
+        previous = float(closes.iloc[-2]) if len(closes) > 1 else current
+
+        change = current - previous
+        change_percent = (change / previous * 100) if previous != 0 else 0
+
         return jsonify({
-            "symbol": symbol.replace(".NS", ""),
-            "currentPrice": round(prices[-1], 2),
-            "change": round(prices[-1] - prices[-2], 2) if len(prices) > 1 else 0,
-            "prediction": round(prices[-1] * 1.05, 2)
+            "status": "success",
+            "symbol": original_symbol,
+            "currentPrice": round(current, 2),
+            "change": round(change, 2),
+            "changePercent": round(change_percent, 2),
+            "prediction": round(current * 1.05, 2)
         })
+
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+@app.route('/api/index/<symbol>')
+def index_data(symbol):
+    try:
+        ticker = yf.Ticker(f"{symbol}.NS")
+        data = ticker.history(period="1d", interval="5m")
+
+        if data.empty:
+            return jsonify({"status": "error", "message": "No data"}), 404
+
+        current = float(data["Close"].iloc[-1])
+        previous = float(data["Close"].iloc[0])
+
+        change = current - previous
+        change_percent = (change / previous) * 100
+
+        return jsonify({
+            "status": "success",
+            "symbol": symbol,
+            "current": round(current, 2),
+            "change": round(change, 2),
+            "changePercent": round(change_percent, 2),
+            "chart": {
+                "labels": [str(i) for i in data.index],
+                "values": data["Close"].round(2).tolist()
+            }
+        })
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 
 if __name__ == '__main__':
     print("🚀 Starting VisionTrade API on http://localhost:5001")

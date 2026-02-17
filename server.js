@@ -112,14 +112,15 @@ app.get('/api/history', async (req, res) => {
         let interval;
 
         switch (period) {
+
             case '1d':
                 interval = '5m';
-                period1 = now - 60 * 24 * 60 * 60; // last 60 days
+                period1 = now - 1 * 24 * 60 * 60; // last 1 day ✅
                 break;
 
-            case '1m':
-                interval = '1d';
-                period1 = now - 30 * 24 * 60 * 60;
+            case '1w':
+                interval = '30m';
+                period1 = now - 7 * 24 * 60 * 60;
                 break;
 
             case '6m':

@@ -1,7 +1,7 @@
 const params = new URLSearchParams(window.location.search);
 const symbol = params.get('symbol');
 
-fetch(`http://localhost:3000/api/stock/${symbol}`)
+fetch(`http://127.0.0.1:5001/api/stock/${symbol}`)
     .then(res => res.json())
     .then(data => {
         document.getElementById('price').innerText = `₹${data.price}`;
