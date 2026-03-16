@@ -27,5 +27,5 @@ def market_data():
     })
 
 if __name__ == '__main__':
-    print("Starting Flask server on http://localhost:5000")
+    print("Starting Flask server on ")
     app.run(host='0.0.0.0', port=5001, debug=True)

@@ -16,7 +16,7 @@ const StockAnalysis = () => {
     const fetchStockAnalysisData = async (symbol) => {
         try {
             // API call to backend for detailed analysis
-            const response = await fetch(`http://localhost:5000/api/stocks/analysis/${symbol}`);
+            const response = await fetch(`http://localhost:3001/api/stocks/analysis/${symbol}`);
             const data = await response.json();
             setStockData(data);
         } catch (error) {
