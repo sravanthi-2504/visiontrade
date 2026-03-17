@@ -127,19 +127,22 @@ app.get('/api/history', async (req, res) => {
                 period1 = now - 1 * 24 * 60 * 60;
                 break;
             case '1w':
-                interval = '30m';
+                interval = '1h';                          // hourly — cleaner 7-day view
                 period1 = now - 7 * 24 * 60 * 60;
                 break;
-            case '6m':
+
+            case '1m':
                 interval = '1d';
-                period1 = now - 180 * 24 * 60 * 60;
+                period1 = now - 30 * 24 * 60 * 60;
                 break;
+
             case '1y':
-                interval = '1d';
+                interval = '1wk';                         // weekly candles — shows Jan–Dec trend
                 period1 = now - 365 * 24 * 60 * 60;
                 break;
+
             case '5y':
-                interval = '1wk';
+                interval = '1mo';                         // monthly candles — long-term view
                 period1 = now - 5 * 365 * 24 * 60 * 60;
                 break;
             default:
@@ -170,21 +173,78 @@ app.get('/api/history', async (req, res) => {
 
 /* 📊 Stock by path param — matches frontend /api/stock/:sym */
 app.get('/api/stock/:symbol', async (req, res) => {
-    const symbol = req.params.symbol;
-    const yahooSymbol = symbol.toUpperCase() + '.NS';
     try {
+        const symbol = req.params.symbol;
+        const yahooSymbol = symbol.toUpperCase() + '.NS';
+        const cacheKey = `stock-${yahooSymbol}`;
+        const cached = cache.get(cacheKey);
+        if (cached && Date.now() - cached.time < CACHE_TTL) {
+            return res.json(cached.data);
+        }
+
+        console.log('📈 Fetching from Yahoo:', yahooSymbol);
         const quote = await yahooFinance.quote(yahooSymbol);
-        if (!quote?.regularMarketPrice)
-            return res.status(404).json({ status: 'error', message: 'Not found' });
-        res.json({
+
+        if (!quote || !quote.regularMarketPrice) {
+            return res.status(404).json({ status: 'error', message: 'Stock not found' });
+        }
+
+        // Fetch extra fundamentals
+        let pe = null, pb = null, eps = null, dividend = null,
+            bookValue = null, beta = null, week52High = null,
+            week52Low = null, avgVolume = null, marketCap = null,
+            open = null, previousClose = null;
+
+        try {
+            const summary = await yahooFinance.quoteSummary(yahooSymbol, {
+                modules: ['summaryDetail', 'defaultKeyStatistics', 'financialData']
+            });
+            pe           = summary?.summaryDetail?.trailingPE ?? null;
+            pb           = summary?.defaultKeyStatistics?.priceToBook ?? null;
+            eps          = summary?.defaultKeyStatistics?.trailingEps?.raw ?? null;
+            dividend     = summary?.summaryDetail?.dividendYield ?? null;
+            bookValue    = summary?.defaultKeyStatistics?.bookValue?.raw ?? null;
+            beta         = summary?.summaryDetail?.beta ?? null;
+            week52High   = summary?.summaryDetail?.fiftyTwoWeekHigh ?? null;
+            week52Low    = summary?.summaryDetail?.fiftyTwoWeekLow ?? null;
+            avgVolume    = summary?.summaryDetail?.averageVolume ?? null;
+            marketCap    = summary?.summaryDetail?.marketCap ?? null;
+            open         = summary?.summaryDetail?.open ?? null;
+            previousClose= summary?.summaryDetail?.previousClose ?? null;
+        } catch (e) {
+            console.warn('⚠️ quoteSummary skipped for', symbol);
+        }
+
+        const data = {
             status: 'success',
-            symbol,
-            currentPrice: quote.regularMarketPrice,
-            change: quote.regularMarketChange,
-            changePercent: quote.regularMarketChangePercent,
-        });
-    } catch (e) {
-        res.status(500).json({ status: 'error', message: e.message });
+            symbol: symbol.toUpperCase(),
+            currentPrice:  quote.regularMarketPrice,
+            change:        quote.regularMarketChange ?? 0,
+            changePercent: quote.regularMarketChangePercent ?? 0,
+            high:          quote.regularMarketDayHigh ?? null,
+            low:           quote.regularMarketDayLow ?? null,
+            open:          open ?? quote.regularMarketOpen ?? null,
+            previousClose: previousClose ?? quote.regularMarketPreviousClose ?? null,
+            volume:        quote.regularMarketVolume ?? null,
+            marketCap,
+            pe,
+            pbRatio:    pb,
+            eps,
+            dividend,
+            bookValue,
+            beta,
+            week52High,
+            week52Low,
+            avgVolume,
+            timestamp: Date.now()
+        };
+
+        cache.set(cacheKey, { data, time: Date.now() });
+        res.json(data);
+
+    } catch (err) {
+        console.error('❌ Yahoo error:', err.message);
+        res.status(500).json({ status: 'error', message: err.message });
     }
 });
 
