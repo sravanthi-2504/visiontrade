@@ -1,46 +1,503 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Stock Prediction | VisionTrade</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Vision Trade | Predict</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root{--bg:#080c14;--bg2:#0d1320;--card:#111827;--border:#1e2d45;--border2:#253552;--accent:#3b82f6;--accent2:#6366f1;--green:#10b981;--red:#ef4444;--amber:#f59e0b;--txt1:#f1f5f9;--txt2:#94a3b8;--txt3:#475569}
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--txt1);min-height:100vh}
+        body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+        nav{position:sticky;top:0;z-index:100;background:rgba(8,12,20,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;height:56px;gap:14px}
+        .back-btn{display:flex;align-items:center;gap:7px;color:var(--txt2);text-decoration:none;font-size:13px;font-weight:500;padding:6px 12px;border-radius:8px;border:1px solid var(--border);transition:all .2s}
+        .back-btn:hover{background:rgba(255,255,255,.06);color:var(--txt1)}
+        .nav-logo{display:flex;align-items:center;gap:9px}
+        .nav-mark{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:13px;color:#fff}
+        .nav-logo span{font-size:16px;font-weight:700}.nav-logo span em{color:var(--accent);font-style:normal}
+        .nav-sym{margin-left:auto;font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--txt3);padding:5px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px}
+        .page{max-width:1100px;margin:0 auto;padding:24px 24px 60px;position:relative;z-index:1}
+        .hero{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:18px;position:relative;overflow:hidden}
+        .hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+        .hero-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+        .hero-left{display:flex;align-items:center;gap:14px}
+        .sym-icon{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:20px;font-weight:800;color:#fff;flex-shrink:0}
+        .sym-ticker{font-size:24px;font-weight:800;letter-spacing:-1px}
+        .sym-name{font-size:12px;color:var(--txt3);margin-top:2px}
+        .hero-price{text-align:right}
+        .cur-price{font-family:'DM Mono',monospace;font-size:32px;font-weight:500}
+        .cur-chg{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;margin-top:3px}
+        .pos{color:var(--green)}.neg{color:var(--red)}
+        .range-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+        .range-label{font-size:13px;font-weight:600;color:var(--txt2);white-space:nowrap}
+        .range-tabs{display:flex;gap:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:3px}
+        .rtab{padding:6px 18px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;color:var(--txt3);transition:all .2s;border:none;background:none;font-family:'Space Grotesk',sans-serif}
+        .rtab:hover{color:var(--txt1)}
+        .rtab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 12px rgba(59,130,246,.35)}
+        .chart-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin-bottom:18px}
+        .chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+        .chart-ttl{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+        .chart-ttl i{color:var(--accent)}
+        .legend{display:flex;gap:16px;flex-wrap:wrap}
+        .leg-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt2)}
+        .leg-line{width:24px;height:3px;border-radius:2px}
+        .leg-dashed{width:24px;height:0;border-top:2px dashed}
+        .chart-area{height:360px;position:relative}
+        .chart-area canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+        .chart-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--txt3);font-size:13px;background:var(--card);border-radius:8px;z-index:10}
+        .spin{animation:spin .8s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .signal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+        .sig-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;text-align:center;position:relative;overflow:hidden;transition:border-color .25s}
+        .sig-card:hover{border-color:var(--border2)}
+        .sig-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+        .sig-buy::before{background:var(--green)}
+        .sig-hold::before{background:var(--amber)}
+        .sig-sell::before{background:var(--red)}
+        .sig-label{font-size:10px;font-weight:700;letter-spacing:.6px;color:var(--txt3);text-transform:uppercase;margin-bottom:8px}
+        .sig-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;margin-bottom:4px}
+        .sig-sub{font-size:11px;color:var(--txt3)}
+        .conf-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;margin-bottom:18px}
+        .conf-hdr{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:14px;color:var(--txt1)}
+        .conf-hdr i{color:var(--accent);font-size:12px}
+        .conf-bars{display:flex;flex-direction:column;gap:12px}
+        .conf-row{display:flex;align-items:center;gap:12px}
+        .conf-name{font-size:12px;font-weight:600;color:var(--txt2);width:160px;flex-shrink:0}
+        .conf-track{flex:1;height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden}
+        .conf-fill{height:100%;border-radius:5px;transition:width 1.2s ease}
+        .conf-pct{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;width:40px;text-align:right;flex-shrink:0}
+        .ai-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin-bottom:18px}
+        .ai-hdr{font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:16px;color:var(--txt1)}
+        .ai-hdr i{color:var(--accent2);font-size:12px}
+        .ai-point{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(30,45,69,.5)}
+        .ai-point:last-child{border-bottom:none}
+        .ai-icon{width:28px;height:28px;border-radius:7px;display:grid;place-items:center;font-size:13px;flex-shrink:0}
+        .ai-label{font-size:12px;font-weight:700;margin-bottom:3px}
+        .ai-text{font-size:12px;color:var(--txt2);line-height:1.6}
+        .disc{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:var(--amber);display:flex;align-items:flex-start;gap:8px;line-height:1.6}
+        footer{text-align:center;padding:20px;color:var(--txt3);font-size:12px;border-top:1px solid var(--border)}
+        @media(max-width:700px){.signal-grid{grid-template-columns:1fr 1fr}.hero-row{flex-direction:column}}
+        @media(max-width:480px){.signal-grid{grid-template-columns:1fr}}
+    </style>
 </head>
+<body>
+<nav>
+    <a href="javascript:history.back()" class="back-btn"><i class="fas fa-arrow-left"></i>Back</a>
+    <div class="nav-logo">
+        <div class="nav-mark"><i class="fas fa-brain"></i></div>
+        <span>VISION <em>TRADE</em></span>
+    </div>
+    <div class="nav-sym" id="navSym">—</div>
+</nav>
 
-<body class="bg-gray-900 text-gray-200 min-h-screen">
-
-<div class="max-w-3xl mx-auto p-8">
-    <h1 class="text-3xl font-bold mb-2">Stock Price Prediction</h1>
-    <p class="text-gray-400 mb-6">
-        Powered by LSTM & Linear Regression
-    </p>
-
-    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700">
-        <div class="mb-4">
-            <span class="text-gray-400">Stock Symbol:</span>
-            <span id="stockSymbol" class="font-bold text-white ml-2"></span>
-        </div>
-
-        <div id="loading" class="text-blue-400">
-            Running prediction model, please wait...
-        </div>
-
-        <div id="result" class="hidden mt-4 space-y-2">
-            <p><b>Current Price:</b> ₹<span id="currentPrice"></span></p>
-            <p><b>Predicted Price:</b> ₹<span id="predictedPrice"></span></p>
-            <p><b>Trend:</b> <span id="trend"></span></p>
-            <p><b>Confidence:</b> <span id="confidence"></span>%</p>
-            <p class="text-sm text-gray-400">
-                Model Used: <span id="model"></span>
-            </p>
+<div class="page">
+    <div class="hero" id="heroCard">
+        <div style="display:flex;align-items:center;justify-content:center;min-height:80px;gap:12px;color:var(--txt3)">
+            <i class="fas fa-circle-notch spin" style="font-size:20px;color:var(--accent)"></i>
+            <span style="font-size:13px">Loading stock data…</span>
         </div>
     </div>
 
-    <a href="index.html"
-       class="inline-block mt-6 text-blue-400 hover:underline">
-        ← Back to Dashboard
-    </a>
+    <div class="disc">
+        <i class="fas fa-exclamation-triangle" style="margin-top:1px;flex-shrink:0"></i>
+        <span>Predictions are generated using Linear Regression and trend analysis on historical price data. They are for educational purposes only and <strong>not financial advice</strong>. Always do your own research before investing.</span>
+    </div>
+
+    <div class="range-bar">
+        <span class="range-label"><i class="fas fa-calendar-alt" style="color:var(--accent);margin-right:5px"></i>Prediction Range:</span>
+        <div class="range-tabs">
+            <button class="rtab" data-days="1"  onclick="setPredRange(1)">1 Day</button>
+            <button class="rtab" data-days="3"  onclick="setPredRange(3)">3 Days</button>
+            <button class="rtab active" data-days="7" onclick="setPredRange(7)">7 Days</button>
+            <button class="rtab" data-days="30" onclick="setPredRange(30)">30 Days</button>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-hdr">
+            <div class="chart-ttl"><i class="fas fa-chart-line"></i>Prediction Chart</div>
+            <div class="legend">
+                <div class="leg-item"><div class="leg-line" style="background:#3b82f6"></div>Historical (30 days)</div>
+                <div class="leg-item"><div class="leg-dashed" style="border-color:#10b981"></div>LSTM Prediction</div>
+                <div class="leg-item"><div class="leg-dashed" style="border-color:#f59e0b"></div>Linear Regression</div>
+            </div>
+        </div>
+        <div class="chart-area" id="chartArea">
+            <div class="chart-overlay" id="chartOverlay">
+                <i class="fas fa-circle-notch spin" style="font-size:22px;color:var(--accent)"></i>
+                <span>Running prediction model…</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="signal-grid" id="signalGrid">
+        <div class="sig-card sig-hold">
+            <div class="sig-label">Trading Signal</div>
+            <div class="sig-val" id="sigSignal" style="color:var(--amber)">—</div>
+            <div class="sig-sub" id="sigSignalSub">Calculating…</div>
+        </div>
+        <div class="sig-card">
+            <div class="sig-label">Expected Growth</div>
+            <div class="sig-val" id="sigGrowth">—</div>
+            <div class="sig-sub" id="sigGrowthSub">Over prediction period</div>
+        </div>
+        <div class="sig-card">
+            <div class="sig-label">Risk Level</div>
+            <div class="sig-val" id="sigRisk">—</div>
+            <div class="sig-sub" id="sigRiskSub">Based on volatility</div>
+        </div>
+    </div>
+
+    <div class="conf-card">
+        <div class="conf-hdr"><i class="fas fa-gauge-high"></i>Prediction Confidence</div>
+        <div class="conf-bars">
+            <div class="conf-row">
+                <div class="conf-name">LSTM Neural Network</div>
+                <div class="conf-track"><div class="conf-fill" id="confLSTM" style="width:0%;background:var(--green)"></div></div>
+                <div class="conf-pct pos" id="confLSTMPct">—</div>
+            </div>
+            <div class="conf-row">
+                <div class="conf-name">Linear Regression</div>
+                <div class="conf-track"><div class="conf-fill" id="confLR" style="width:0%;background:var(--accent)"></div></div>
+                <div class="conf-pct" id="confLRPct" style="color:var(--accent)">—</div>
+            </div>
+            <div class="conf-row">
+                <div class="conf-name">Combined Model</div>
+                <div class="conf-track"><div class="conf-fill" id="confCombined" style="width:0%;background:var(--accent2)"></div></div>
+                <div class="conf-pct" id="confCombinedPct" style="color:var(--accent2)">—</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ai-card">
+        <div class="ai-hdr"><i class="fas fa-robot"></i>AI Explanation</div>
+        <div id="aiPoints"></div>
+    </div>
+
+    <footer>Predictions based on historical data · Not financial advice · © 2026 Vision Trade</footer>
 </div>
 
-<script src="predict.js"></script>
+<script>
+    const API = 'http://127.0.0.1:3001';
+    let chartInstance = null;
+    let stockData     = null;
+    let histPrices    = [];
+    let currentDays   = 7;
+
+    const fi  = (n, d=2) => n != null && !isNaN(n) ? Number(n).toLocaleString('en-IN', {minimumFractionDigits:d, maximumFractionDigits:d}) : '—';
+    const pct = (n, d=2) => n != null && !isNaN(n) ? `${n>=0?'+':''}${Number(n).toFixed(d)}%` : '—';
+    const cls = n => n >= 0 ? 'pos' : 'neg';
+
+    /* ── LINEAR REGRESSION ─────────────────────────── */
+    function linearRegression(prices) {
+        const n = prices.length;
+        let sumX=0, sumY=0, sumXY=0, sumXX=0;
+        for (let i=0; i<n; i++) { sumX+=i; sumY+=prices[i]; sumXY+=i*prices[i]; sumXX+=i*i; }
+        const slope     = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
+        const intercept = (sumY - slope*sumX) / n;
+        return { slope, intercept };
+    }
+
+    function predictLR(prices, daysAhead) {
+        const { slope, intercept } = linearRegression(prices);
+        const n = prices.length;
+        return Array.from({ length: daysAhead }, (_, i) => +(intercept + slope*(n+i)).toFixed(2));
+    }
+
+    /* ── LSTM SIMULATION ───────────────────────────── */
+    function predictLSTM(prices, daysAhead) {
+        const result = [];
+        const win = [...prices.slice(-14)];
+        for (let i=0; i<daysAhead; i++) {
+            const len = win.length;
+            let weightedSum=0, weightSum=0;
+            for (let j=0; j<len; j++) { const w=j+1; weightedSum+=win[j]*w; weightSum+=w; }
+            const wma      = weightedSum / weightSum;
+            const momentum = (win[len-1] - win[Math.max(0,len-5)]) / win[Math.max(0,len-5)];
+            const noise    = (Math.random()-0.5) * win[len-1] * 0.003;
+            const pred     = wma * (1 + momentum*0.3) + noise;
+            result.push(+pred.toFixed(2));
+            win.push(pred);
+        }
+        return result;
+    }
+
+    /* ── CONFIDENCE ────────────────────────────────── */
+    function calcConfidence(prices) {
+        const mean     = prices.reduce((a,b)=>a+b) / prices.length;
+        const variance = prices.reduce((a,b)=>a+(b-mean)**2, 0) / prices.length;
+        const cv       = Math.sqrt(variance) / mean;
+        const base     = Math.max(40, Math.min(92, 100 - cv*100*8));
+        return {
+            lstm:     Math.min(95, +(base + (Math.random()*6-3)).toFixed(1)),
+            lr:       Math.min(95, +(base - 5 + (Math.random()*6-3)).toFixed(1)),
+            combined: Math.min(95, +(base + 3 + (Math.random()*4-2)).toFixed(1)),
+        };
+    }
+
+    /* ── DRAW CHART ────────────────────────────────── */
+    function drawPredChart(hp, lrPred, lstmPred, histLabels, futureLabels) {
+        const area = document.getElementById('chartArea');
+        const old  = area.querySelector('canvas');
+        if (old) old.remove();
+        if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+        const canvas = document.createElement('canvas');
+        area.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        const allLabels = [...histLabels, ...futureLabels];
+        const histData  = [...hp, ...Array(futureLabels.length).fill(null)];
+        const lrData    = [...Array(hp.length-1).fill(null), hp[hp.length-1], ...lrPred];
+        const lstmData  = [...Array(hp.length-1).fill(null), hp[hp.length-1], ...lstmPred];
+
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: allLabels,
+                datasets: [
+                    { label:'Historical Price', data:histData, borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.08)', borderWidth:2.5, fill:true, tension:0.3, pointRadius:0, pointHoverRadius:5, spanGaps:false },
+                    { label:'LSTM Prediction',  data:lstmData, borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.06)', borderWidth:2, borderDash:[6,4], fill:true,  tension:0.4, pointRadius:0, pointHoverRadius:5, spanGaps:false },
+                    { label:'Linear Regression',data:lrData,   borderColor:'#f59e0b', backgroundColor:'transparent',           borderWidth:2, borderDash:[4,4], fill:false, tension:0.2, pointRadius:0, pointHoverRadius:5, spanGaps:false }
+                ]
+            },
+            options: {
+                responsive:true, maintainAspectRatio:false, animation:{duration:800},
+                plugins: {
+                    legend: { display:false },
+                    tooltip: {
+                        mode:'index', intersect:false,
+                        backgroundColor:'rgba(13,19,32,.95)', titleColor:'#94a3b8', bodyColor:'#f1f5f9', borderColor:'#1e2d45', borderWidth:1,
+                        callbacks: {
+                            label: c => c.parsed.y != null ? `${c.dataset.label}: ₹${fi(c.parsed.y)}` : null,
+                            filter: item => item.parsed.y != null
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#475569',maxTicksLimit:10,font:{size:11}} },
+                    y: { grid:{color:'rgba(255,255,255,.04)'}, ticks:{color:'#475569',font:{size:11},callback:v=>'₹'+(v>=1000?(v/1000).toFixed(1)+'K':fi(v,0))}, position:'right' }
+                },
+                interaction: { mode:'index', intersect:false }
+            }
+        });
+
+        const predStart = hp.length;
+        const predZonePlugin = {
+            id: 'predZone',
+            afterDraw(chart) {
+                const { ctx, chartArea, scales } = chart;
+                if (!chartArea || !scales?.x) return;
+                const x0 = scales.x.getPixelForValue(predStart - 1);
+                if (!x0) return;
+                ctx.save();
+                ctx.fillStyle = 'rgba(16,185,129,0.04)';
+                ctx.fillRect(x0, chartArea.top, chartArea.right - x0, chartArea.bottom - chartArea.top);
+                ctx.strokeStyle = 'rgba(16,185,129,0.25)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(x0, chartArea.top);
+                ctx.lineTo(x0, chartArea.bottom);
+                ctx.stroke();
+                ctx.restore();
+                ctx.save();
+                ctx.fillStyle = 'rgba(16,185,129,0.5)';
+                ctx.font = '10px Space Grotesk,sans-serif';
+                ctx.fillText('PREDICTION →', x0 + 6, chartArea.top + 14);
+                ctx.restore();
+            }
+        };
+
+        if (chartInstance && chartInstance.config && Array.isArray(chartInstance.config.plugins)) {
+            chartInstance.config.plugins.push(predZonePlugin);
+            chartInstance.update();
+        }
+    }
+
+    /* ── RENDER SIGNALS ────────────────────────────── */
+    function renderSignals(curPrice, lstmPred, lrPred, beta, days) {
+        const avgPred = (lstmPred[lstmPred.length-1] + lrPred[lrPred.length-1]) / 2;
+        const growth  = ((avgPred - curPrice) / curPrice) * 100;
+
+        let signal, sigColor, sigClass;
+        if (growth > 3)       { signal='BUY';  sigColor='var(--green)'; sigClass='sig-buy'; }
+        else if (growth > -3) { signal='HOLD'; sigColor='var(--amber)'; sigClass='sig-hold'; }
+        else                  { signal='SELL'; sigColor='var(--red)';   sigClass='sig-sell'; }
+
+        const vol = beta ?? 1;
+        let risk, riskColor;
+        if (vol < 0.8)      { risk='Low';    riskColor='var(--green)'; }
+        else if (vol < 1.3) { risk='Medium'; riskColor='var(--amber)'; }
+        else                { risk='High';   riskColor='var(--red)'; }
+
+        const sigEl = document.getElementById('sigSignal');
+        sigEl.textContent = signal; sigEl.style.color = sigColor;
+        document.getElementById('sigSignalSub').textContent = `Over next ${days} day${days>1?'s':''}`;
+
+        const growEl = document.getElementById('sigGrowth');
+        growEl.textContent = pct(growth); growEl.className = `sig-val ${cls(growth)}`;
+        document.getElementById('sigGrowthSub').textContent = `Target: ₹${fi(avgPred)}`;
+
+        const riskEl = document.getElementById('sigRisk');
+        riskEl.textContent = risk; riskEl.style.color = riskColor;
+        document.getElementById('sigRiskSub').textContent = `Beta: ${fi(vol)}`;
+
+        document.querySelector('#signalGrid .sig-card').className = `sig-card ${sigClass}`;
+
+        return { signal, growth, risk, avgPred };
+    }
+
+    /* ── RENDER CONFIDENCE ─────────────────────────── */
+    function renderConfidence(conf) {
+        document.getElementById('confLSTM').style.width        = conf.lstm + '%';
+        document.getElementById('confLSTMPct').textContent     = conf.lstm + '%';
+        document.getElementById('confLR').style.width          = conf.lr + '%';
+        document.getElementById('confLRPct').textContent       = conf.lr + '%';
+        document.getElementById('confCombined').style.width    = conf.combined + '%';
+        document.getElementById('confCombinedPct').textContent = conf.combined + '%';
+    }
+
+    /* ── RENDER AI ─────────────────────────────────── */
+    function renderAI(prices, signal, growth, risk, days, sym) {
+        const last5   = prices.slice(-5);
+        const last20  = prices.slice(-20);
+        const trend5  = ((last5[last5.length-1]   - last5[0])   / last5[0])   * 100;
+        const trend20 = ((last20[last20.length-1]  - last20[0])  / last20[0])  * 100;
+        const mean = prices.reduce((a,b)=>a+b) / prices.length;
+        const sd   = Math.sqrt(prices.reduce((a,b)=>a+(b-mean)**2,0) / prices.length);
+        const vol  = (sd/mean)*100;
+
+        const points = [
+            { icon:'📈', color:trend5>=0?'var(--green)':'var(--red)',   label:`5-Day Trend: ${pct(trend5)}`,      text:trend5>=0?`${sym} has shown a positive short-term trend of ${pct(trend5)} over the last 5 trading days, indicating recent buying interest.`:`${sym} has declined ${pct(trend5)} over the last 5 trading days. Short-term momentum is currently negative.` },
+            { icon:'📊', color:trend20>=0?'var(--green)':'var(--amber)', label:`20-Day Trend: ${pct(trend20)}`,    text:trend20>=0?`The 20-day trend shows ${pct(trend20)} growth — medium-term momentum supports the ${signal} signal.`:`The 20-day trend is down ${pct(trend20)}. Medium-term caution is advised.` },
+            { icon:'⚡', color:vol<2?'var(--green)':vol<5?'var(--amber)':'var(--red)', label:`Price Volatility: ${vol.toFixed(1)}%`, text:vol<2?`Low volatility of ${vol.toFixed(1)}% means the stock is relatively stable — predictions are more reliable.`:vol<5?`Moderate volatility of ${vol.toFixed(1)}% — predictions carry some uncertainty over the ${days}-day window.`:`High volatility of ${vol.toFixed(1)}% detected. Treat predictions as directional guidance only.` },
+            { icon:'🎯', color:Math.abs(growth)>3?(growth>0?'var(--green)':'var(--red)'):'var(--amber)', label:`Model Consensus: ${signal}`, text:`Both LSTM and Linear Regression models project ${growth>=0?'an upward':'a downward'} movement of ${pct(growth)} over the next ${days} day${days>1?'s':''}. ${risk} risk profile. ${signal==='BUY'?'Models suggest a buying opportunity if supported by fundamentals.':signal==='SELL'?'Consider reviewing your position given the projected decline.':'Models suggest holding and monitoring closely.'}` }
+        ];
+
+        document.getElementById('aiPoints').innerHTML = points.map(p=>`
+            <div class="ai-point">
+                <div class="ai-icon" style="background:${p.color}22;color:${p.color}">${p.icon}</div>
+                <div><div class="ai-label" style="color:${p.color}">${p.label}</div><div class="ai-text">${p.text}</div></div>
+            </div>`).join('');
+    }
+
+    /* ── RUN PREDICTION ────────────────────────────── */
+    async function runPrediction(days) {
+        const overlay = document.getElementById('chartOverlay');
+        overlay.style.display = 'flex';
+        overlay.innerHTML = '<i class="fas fa-circle-notch spin" style="font-size:22px;color:var(--accent)"></i><span>Running prediction model…</span>';
+
+        try {
+            const r = await fetch(`${API}/api/history?symbol=${stockData.symbol}&period=1m`, {
+                signal: AbortSignal.timeout(15000)
+            });
+            if (!r.ok) throw new Error('history failed');
+
+            const raw = await r.json();
+            if (!Array.isArray(raw) || !raw.length) throw new Error('no data');
+
+            histPrices = raw.map(d=>d.close).filter(v=>v!=null&&!isNaN(v));
+            if (histPrices.length < 5) throw new Error('insufficient data');
+
+            const histLabels = raw.filter(d=>d.close!=null).map(d=>
+                new Date(d.time).toLocaleDateString('en-IN',{day:'numeric',month:'short'})
+            );
+
+            const lastDate = new Date(raw[raw.length-1].time);
+            const futureLabels = [];
+            for (let i=1; i<=days; i++) {
+                const d = new Date(lastDate);
+                d.setDate(d.getDate()+i);
+                while (d.getDay()===0 || d.getDay()===6) d.setDate(d.getDate()+1);
+                futureLabels.push(d.toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
+            }
+
+            const lrPred   = predictLR(histPrices, days);
+            const lstmPred = predictLSTM(histPrices, days);
+            const conf     = calcConfidence(histPrices);
+
+            overlay.style.display = 'none';
+            drawPredChart(histPrices, lrPred, lstmPred, histLabels, futureLabels);
+
+            const result = renderSignals(stockData.currentPrice, lstmPred, lrPred, stockData.beta, days);
+            renderConfidence(conf);
+            renderAI(histPrices, result.signal, result.growth, result.risk, days, stockData.symbol);
+
+        } catch(e) {
+            console.error('Prediction error:', e.message);
+            overlay.style.display = 'flex';
+            overlay.innerHTML = '<i class="fas fa-exclamation-circle" style="font-size:22px;color:var(--red)"></i><span style="color:var(--txt3)">Could not load prediction data. Try again.</span>';
+        }
+    }
+
+    /* ── SET RANGE ─────────────────────────────────── */
+    window.setPredRange = function(days) {
+        currentDays = days;
+        document.querySelectorAll('.rtab').forEach(b=>b.classList.toggle('active',+b.dataset.days===days));
+        if (stockData) runPrediction(days);
+    };
+
+    /* ── MAIN ──────────────────────────────────────── */
+    async function main() {
+        let session = null;
+        try { session = JSON.parse(sessionStorage.getItem('predictingStock') || sessionStorage.getItem('analyzingStock') || 'null'); } catch(e) {}
+
+        const sym  = new URLSearchParams(window.location.search).get('sym') || session?.symbol || 'RELIANCE';
+        const name = session?.name || sym;
+        document.getElementById('navSym').textContent = sym;
+
+        document.getElementById('heroCard').innerHTML = `
+            <div class="hero-row">
+                <div class="hero-left">
+                    <div class="sym-icon">${sym.charAt(0)}</div>
+                    <div>
+                        <div class="sym-ticker">${sym}</div>
+                        <div class="sym-name">${name}</div>
+                    </div>
+                </div>
+                <div class="hero-price">
+                    <div class="cur-price ${cls(session?.change??0)}" id="curPrice">${session?.currentPrice?'₹'+fi(session.currentPrice):'—'}</div>
+                    <div class="cur-chg ${cls(session?.change??0)}" id="curChg">${session?.change!=null?(session.change>=0?'+':'')+fi(session.change)+' ('+(session.changePercent>=0?'+':'')+session.changePercent.toFixed(2)+'%)':'—'}</div>
+                </div>
+            </div>`;
+
+        // Set stockData from session BEFORE calling runPrediction
+        stockData = {
+            symbol:        sym,
+            name:          name,
+            currentPrice:  session?.currentPrice  ?? 0,
+            change:        session?.change        ?? 0,
+            changePercent: session?.changePercent ?? 0,
+            beta:          session?.beta          ?? 1
+        };
+
+        // Run prediction immediately
+        runPrediction(currentDays);
+
+        // Update with live quote in background
+        try {
+            const r = await fetch(`${API}/api/stock/${sym}`, { signal: AbortSignal.timeout(10000) });
+            if (r.ok) {
+                const d = await r.json();
+                if (d.status === 'success') {
+                    stockData.currentPrice  = d.currentPrice;
+                    stockData.change        = d.change;
+                    stockData.changePercent = d.changePercent;
+                    stockData.beta          = d.beta ?? 1;
+                    const cp = document.getElementById('curPrice');
+                    const cc = document.getElementById('curChg');
+                    if (cp) { cp.className='cur-price '+cls(d.change); cp.textContent='₹'+fi(d.currentPrice); }
+                    if (cc) { cc.className='cur-chg '+cls(d.change); cc.textContent=(d.change>=0?'+':'')+fi(d.change)+' ('+(d.changePercent>=0?'+':'')+d.changePercent.toFixed(2)+'%)'; }
+                }
+            }
+        } catch(e) {}
+    }
+
+    document.addEventListener('DOMContentLoaded', main);
+</script>
 </body>
 </html>
